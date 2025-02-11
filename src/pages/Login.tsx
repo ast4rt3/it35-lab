@@ -9,7 +9,7 @@ const Login: React.FC = () => {
 
   const handleLogin = () => {
     if (username === 'admin' && password === 'password') {
-      history.push('/home');
+      history.push('./home');
     } else {
       alert('Invalid Credentials');
     }
