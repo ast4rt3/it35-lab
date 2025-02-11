@@ -1,1 +1,1 @@
-/// <reference types="vite/client" />
+/// <reference types="/it35-lab/" />
