@@ -1,4 +1,12 @@
-import { IonButton, IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import {
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonMenuButton,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+} from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import './Home.css';
 
@@ -9,6 +17,7 @@ const Home: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
+          <IonMenuButton slot="start" />
           <IonTitle>Home</IonTitle>
         </IonToolbar>
       </IonHeader>

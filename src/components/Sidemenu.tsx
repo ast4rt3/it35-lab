@@ -14,9 +14,9 @@ const Sidemenu: React.FC = () => {
       </IonHeader>
       <IonContent>
         <IonList>
-          <IonItem button onClick={() => history.push('/home')}>Home</IonItem>
-          <IonItem button onClick={() => history.push('/details')}>Details</IonItem>
-          <IonItem button onClick={() => history.push('/login')}>Logout</IonItem>
+          <IonItem button onClick={() => history.push('./home')}>Home</IonItem>
+          <IonItem button onClick={() => history.push('./details')}>Details</IonItem>
+          <IonItem button onClick={() => history.push('./login')}>Logout</IonItem>
         </IonList>
       </IonContent>
     </IonMenu>
