@@ -1,0 +1,14 @@
+ion-card {
+    text-align: center;
+  }
+  
+  ion-card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  ion-button {
+    border-radius: 10px;
+    font-size: 1.1rem;
+  }
+  
