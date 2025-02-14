@@ -2,7 +2,7 @@
   "name": "it35-lab",
   "private": true,
   "version": "0.0.1",
-  "type": "module",
+  "type": "module", 
    "homepage": "https://github.com/ast4rt3/it35-lab",
   "scripts": {
     "dev": "vite",
