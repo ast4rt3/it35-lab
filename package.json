@@ -3,18 +3,17 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-   "homepage": "https://github.com/ast4rt3/it35-lab",
+  "homepage": "https://ast4rt3.github.io/it35-lab/",
+
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test.e2e": "cypress run",
     "test.unit": "vitest",
-    "lint": "eslint",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
-
-
+    "lint": "eslint"
   },
   "dependencies": {
     "@capacitor/app": "7.0.0",
