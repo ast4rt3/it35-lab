@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton } from '@ionic/react';
-import { useHistory } from 'react-router-dom';
+import { 
+  IonPage, 
+  IonHeader, 
+  IonToolbar, 
+  IonTitle, 
+  IonContent, 
+  IonInput, 
+  IonButton, 
+  useIonRouter 
+} from '@ionic/react';
 
 const Login: React.FC = () => {
-  const history = useHistory();
+  const navigation = useIonRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
     if (username === 'admin' && password === 'password') {
-      history.push('./home');
+      navigation.push('/it35-lab/app', 'forward', 'replace');
     } else {
       alert('Invalid Credentials');
     }
@@ -23,9 +31,18 @@ const Login: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <IonInput placeholder="Username" onIonChange={(e) => setUsername(e.detail.value!)} />
-        <IonInput type="password" placeholder="Password" onIonChange={(e) => setPassword(e.detail.value!)} />
-        <IonButton expand="full" onClick={handleLogin}>Login</IonButton>
+        <IonInput 
+          placeholder="Username" 
+          onIonChange={(e) => setUsername(e.detail.value!)} 
+        />
+        <IonInput 
+          type="password" 
+          placeholder="Password" 
+          onIonChange={(e) => setPassword(e.detail.value!)} 
+        />
+        <IonButton expand="full" onClick={handleLogin}>
+          Login
+        </IonButton>
       </IonContent>
     </IonPage>
   );
