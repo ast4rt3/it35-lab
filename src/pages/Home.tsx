@@ -25,7 +25,7 @@ import Feed from './home-tabs/Feed';
 import Search from './home-tabs/Search';
 
 import { useHistory } from 'react-router-dom';
-import './Home.css';
+
 
 const Home: React.FC = () => {
 
