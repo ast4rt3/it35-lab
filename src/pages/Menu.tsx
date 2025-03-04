@@ -14,22 +14,31 @@ import {
     IonTitle, 
     IonToolbar 
 } from '@ionic/react'
-import {homeOutline, logOutOutline, rocketOutline} from 'ionicons/icons';
+import {homeOutline,
+     logOutOutline, bookOutline,
+     hammerOutline,
+     notificationsOutline,
+    calendarOutline} from 'ionicons/icons';
 import { Redirect, Route } from 'react-router';
 import Home from './Home';
-import About from './About';
-import Details from './Details';
+import Logs from './Logs';
+import './Menu.css'; // Import the CSS file for custom styles
+
 
 const Menu: React.FC = () => {
   const path = [
       {name:'Home', url: '/it35-lab/app/home', icon: homeOutline},
-      {name:'About', url: '/it35-lab/app/about', icon: rocketOutline},
+      {name:'Logs', url: '/it35-lab/app/Logs', icon: bookOutline},
+      {name:'Incidents & Reports', url: '/it35-lab/app/home', icon: hammerOutline},
+      {name:'Alerts & Notfications', url: '/it35-lab/app/home', icon: notificationsOutline},
+      {name:'Events Monitoring', url: '/it35-lab/app/home', icon: calendarOutline}
+
   ]
 
   return (
       <IonPage>
-          <IonSplitPane contentId="main">
-              <IonMenu contentId="main">
+          <IonSplitPane contentId="main" when="always"> {/* Ensure the menu is always visible */}
+              <IonMenu contentId="main" className="custom-menu-width">
                   <IonHeader>
                       <IonToolbar>
                           <IonTitle>
@@ -37,7 +46,7 @@ const Menu: React.FC = () => {
                           </IonTitle>
                       </IonToolbar>
                   </IonHeader>
-                  <IonContent>
+                  <IonContent className="menu-content"> {/* Add custom class */}
                       {path.map((item,index) =>(
                           <IonMenuToggle key={index}>
                               <IonItem routerLink={item.url} routerDirection="forward">
@@ -47,7 +56,7 @@ const Menu: React.FC = () => {
                           </IonMenuToggle>
                       ))}
 
-                      {/*Logout Button*/}
+                      
                       <IonButton routerLink="/it35-lab" routerDirection="back" expand="full">
                           <IonIcon icon={logOutOutline} slot="start"> </IonIcon>
                       Logout
@@ -58,9 +67,7 @@ const Menu: React.FC = () => {
               
               <IonRouterOutlet id="main">
                   <Route exact path="/it35-lab/app/home" component={Home} />
-                  <Route exact path="/it35-lab/app/home/details" component={Details} />
-                  <Route exact path="/it35-lab/app/about" component={About} />
-
+                  <Route exact path="/it35-lab/app/logs" component={Logs} />
                   <Route exact path="/it35-lab/app">
                       <Redirect to="/it35-lab/app/home"/>
                   </Route>
