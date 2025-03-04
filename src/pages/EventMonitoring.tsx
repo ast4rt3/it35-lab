@@ -1,3 +1,6 @@
+
+
+
 import { 
     IonButtons,
       IonContent, 
@@ -8,7 +11,7 @@ import {
       IonToolbar 
   } from '@ionic/react';
   
-  const Logs: React.FC = () => {
+  const EventMonitoring: React.FC = () => {
     return (
       <IonPage>
         <IonHeader>
@@ -16,7 +19,7 @@ import {
             <IonButtons slot='start'>
               <IonMenuButton></IonMenuButton>
             </IonButtons>
-            <IonTitle>Logs</IonTitle>
+            <IonTitle>EventMonitoring</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent fullscreen>
@@ -28,11 +31,11 @@ import {
             height: '100%',
           }}
         >
-          Logs
+          EventMonitoring
         </div>
         </IonContent>
       </IonPage>
     );
   };
   
-  export default Logs;
+  export default EventMonitoring;

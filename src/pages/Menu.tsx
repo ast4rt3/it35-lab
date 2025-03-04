@@ -22,6 +22,9 @@ import {homeOutline,
 import { Redirect, Route } from 'react-router';
 import Home from './Home';
 import Logs from './Logs';
+import IncidentAndReport from './IncidentAndReport';
+import AlertAndNotification from './AlertAndNotification';
+import EventMonitoring from './EventMonitoring';
 import './Menu.css'; // Import the CSS file for custom styles
 
 
@@ -29,9 +32,9 @@ const Menu: React.FC = () => {
   const path = [
       {name:'Home', url: '/it35-lab/app/home', icon: homeOutline},
       {name:'Logs', url: '/it35-lab/app/Logs', icon: bookOutline},
-      {name:'Incidents & Reports', url: '/it35-lab/app/home', icon: hammerOutline},
-      {name:'Alerts & Notfications', url: '/it35-lab/app/home', icon: notificationsOutline},
-      {name:'Events Monitoring', url: '/it35-lab/app/home', icon: calendarOutline}
+      {name:'Incidents & Reports', url: '/it35-lab/app/IncidentAndReport', icon: hammerOutline},
+      {name:'Alerts & Notfications', url: '/it35-lab/app/AlertAndNotification', icon: notificationsOutline},
+      {name:'Events Monitoring', url: '/it35-lab/app/EventMonitoring', icon: calendarOutline}
 
   ]
 
@@ -66,9 +69,12 @@ const Menu: React.FC = () => {
               </IonMenu>
               
               <IonRouterOutlet id="main">
-                  <Route exact path="/it35-lab/app/home" component={Home} />
-                  <Route exact path="/it35-lab/app/logs" component={Logs} />
-                  <Route exact path="/it35-lab/app">
+            <Route exact path="/it35-lab/app/home" component={Home} />
+            <Route exact path="/it35-lab/app/logs" component={Logs} />
+            <Route exact path="/it35-lab/app/IncidentAndReport" component={IncidentAndReport} />
+            <Route exact path="/it35-lab/app/AlertAndNotification" component={AlertAndNotification} />
+            <Route exact path="/it35-lab/app/EventMonitoring" component={EventMonitoring} />
+            <Route exact path="/it35-lab/app">
                       <Redirect to="/it35-lab/app/home"/>
                   </Route>
               </IonRouterOutlet>
