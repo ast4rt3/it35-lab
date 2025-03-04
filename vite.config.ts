@@ -1,19 +1,19 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import legacy from '@vitejs/plugin-legacy';
-import { configDefaults } from 'vitest/config';
+/// <reference types="vitest" />
 
+import legacy from '@vitejs/plugin-legacy'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+
+// https://vitejs.dev/config/
 export default defineConfig({
-  base: "/it35-lab/", 
-  plugins: [react(), legacy()],
-  build: {
-    outDir: "dist",
-    assetsDir: "assets",
-  },
+  plugins: [
+    react(),
+    legacy()
+  ],
+  base:"/it35-lab",
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
-    exclude: [...configDefaults.exclude],
   }
-});
+})
