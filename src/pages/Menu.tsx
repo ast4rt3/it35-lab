@@ -6,7 +6,6 @@ import {
     IonIcon, 
     IonItem, 
     IonMenu, 
-    IonMenuButton, 
     IonMenuToggle, 
     IonPage, 
     IonRouterOutlet, 
@@ -18,7 +17,9 @@ import {homeOutline,
      logOutOutline, bookOutline,
      hammerOutline,
      notificationsOutline,
-    calendarOutline} from 'ionicons/icons';
+    calendarOutline,
+    menuOutline,
+    colorFill} from 'ionicons/icons';
 import { Redirect, Route } from 'react-router';
 import Home from './Home';
 import Logs from './Logs';
@@ -39,18 +40,26 @@ const Menu: React.FC = () => {
   ]
 
   return (
-      <IonPage>
+      <>
+      <IonPage > 
           <IonSplitPane contentId="main" when="always"> {/* Ensure the menu is always visible */}
               <IonMenu contentId="main" className="custom-menu-width">
                   <IonHeader>
-                      <IonToolbar>
+                      <IonToolbar >
+                          <IonButtons slot="start">
+                              <IonMenuToggle>
+                                  <IonButton>
+                                      <IonIcon icon={menuOutline} slot="icon-only" />
+                                  </IonButton>
+                              </IonMenuToggle>
+                          </IonButtons>
                           <IonTitle>
-                              Menu
+                              Home
                           </IonTitle>
                       </IonToolbar>
                   </IonHeader>
-                  <IonContent className="menu-content"> {/* Add custom class */}
-                      {path.map((item,index) =>(
+                  <IonContent className="menu-content"> 
+                      {path.map((item, index) => (
                           <IonMenuToggle key={index}>
                               <IonItem routerLink={item.url} routerDirection="forward">
                                   <IonIcon icon={item.icon} slot="start"></IonIcon>
@@ -59,29 +68,26 @@ const Menu: React.FC = () => {
                           </IonMenuToggle>
                       ))}
 
-                      
                       <IonButton routerLink="/it35-lab" routerDirection="back" expand="full">
                           <IonIcon icon={logOutOutline} slot="start"> </IonIcon>
-                      Logout
+                          Logout
                       </IonButton>
-                      
                   </IonContent>
               </IonMenu>
-              
               <IonRouterOutlet id="main">
-            <Route exact path="/it35-lab/app/home" component={Home} />
-            <Route exact path="/it35-lab/app/logs" component={Logs} />
-            <Route exact path="/it35-lab/app/IncidentAndReport" component={IncidentAndReport} />
-            <Route exact path="/it35-lab/app/AlertAndNotification" component={AlertAndNotification} />
-            <Route exact path="/it35-lab/app/EventMonitoring" component={EventMonitoring} />
-            <Route exact path="/it35-lab/app">
-                      <Redirect to="/it35-lab/app/home"/>
+                  <Route exact path="/it35-lab/app/home" component={Home} />
+                  <Route exact path="/it35-lab/app/logs" component={Logs} />
+                  <Route exact path="/it35-lab/app/IncidentAndReport" component={IncidentAndReport} />
+                  <Route exact path="/it35-lab/app/AlertAndNotification" component={AlertAndNotification} />
+                  <Route exact path="/it35-lab/app/EventMonitoring" component={EventMonitoring} />
+                  <Route exact path="/it35-lab/app">
+                      <Redirect to="/it35-lab/app/home" />
                   </Route>
               </IonRouterOutlet>
-
           </IonSplitPane>
       </IonPage>
+      </>
   );
-};
+}
 
 export default Menu;
