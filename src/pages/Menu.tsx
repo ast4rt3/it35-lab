@@ -25,7 +25,7 @@ import Logs from './Logs';
 import IncidentAndReport from './IncidentAndReport';
 import AlertAndNotification from './AlertAndNotification';
 import EventMonitoring from './EventMonitoring';
-import './Menu.css'; // Import the CSS file for custom styles
+
 
 
 const Menu: React.FC = () => {
@@ -40,8 +40,8 @@ const Menu: React.FC = () => {
 
   return (
       <>
-      <IonPage > 
-          <IonSplitPane contentId="main" when="always"> {/* Ensure the menu is always visible */}
+      <IonPage >    
+          <IonSplitPane when="always"> 
               <IonMenu contentId="main" className="custom-menu-width">
                   <IonHeader>
                       <IonToolbar >
@@ -53,7 +53,7 @@ const Menu: React.FC = () => {
                               </IonMenuToggle>
                           </IonButtons>
                           <IonTitle>
-                              Home
+                              SPiS
                           </IonTitle>
                       </IonToolbar>
                   </IonHeader>
@@ -61,7 +61,7 @@ const Menu: React.FC = () => {
                       {path.map((item, index) => (
                           <IonMenuToggle key={index}>
                               <IonItem routerLink={item.url} routerDirection="forward">
-                                  <IonIcon icon={item.icon} slot="start"></IonIcon>
+                                  <IonIcon icon={item.icon} className="menu-icon" slot="start"></IonIcon>
                                   {item.name}
                               </IonItem>
                           </IonMenuToggle>
