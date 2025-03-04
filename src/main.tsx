@@ -16,6 +16,7 @@ import './theme/variables.css';
 
 
 const container = document.getElementById('root');
+document.body.classList.toggle('dark-theme', true);
 const root = createRoot(container!);
 root.render(
   <React.StrictMode>
