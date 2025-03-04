@@ -32,3 +32,44 @@
   .no-theme-button:hover {
     box-shadow: none !important;
   }
+
+  .dashboard-placeholder {
+    width: 250px;
+    height: 250px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px dashed white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 12px;
+  }
+  
+  .ion-justify-content-center {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .ion-align-items-center {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+  .custom-menu-width {
+    --width: 250px; 
+  }
+  .custom-menu-height {
+      --height: 10px; 
+    }
+  
+  .menu-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    overflow-y: auto; 
+    
+  }
