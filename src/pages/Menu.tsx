@@ -18,8 +18,7 @@ import {homeOutline,
      hammerOutline,
      notificationsOutline,
     calendarOutline,
-    menuOutline,
-    colorFill} from 'ionicons/icons';
+    menuOutline} from 'ionicons/icons';
 import { Redirect, Route } from 'react-router';
 import Home from './Home';
 import Logs from './Logs';
@@ -48,7 +47,7 @@ const Menu: React.FC = () => {
                       <IonToolbar >
                           <IonButtons slot="start">
                               <IonMenuToggle>
-                                  <IonButton>
+                                <IonButton className="no-theme-button">
                                       <IonIcon icon={menuOutline} slot="icon-only" />
                                   </IonButton>
                               </IonMenuToggle>
@@ -58,7 +57,7 @@ const Menu: React.FC = () => {
                           </IonTitle>
                       </IonToolbar>
                   </IonHeader>
-                  <IonContent className="menu-content"> 
+                  <IonContent className="menu-content" > 
                       {path.map((item, index) => (
                           <IonMenuToggle key={index}>
                               <IonItem routerLink={item.url} routerDirection="forward">
@@ -68,7 +67,7 @@ const Menu: React.FC = () => {
                           </IonMenuToggle>
                       ))}
 
-                      <IonButton routerLink="/it35-lab" routerDirection="back" expand="full">
+                      <IonButton routerLink="/it35-lab" routerDirection="back" expand="full" >
                           <IonIcon icon={logOutOutline} slot="start"> </IonIcon>
                           Logout
                       </IonButton>
