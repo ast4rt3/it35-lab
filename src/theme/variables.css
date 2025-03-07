@@ -1,2 +1,75 @@
-/* For information on how to create your own theme, please see:
-http://ionicframework.com/docs/theming/ */
+:root {
+    --ion-background-color: #1a1b26; /* Dark navy */
+    --ion-text-color: #c0caf5; /* Foreground text */
+    --ion-color-primary: #7aa2f7; /* Neon blue */
+    --ion-color-secondary: #c3e88d; /* Green */
+    --ion-color-tertiary: #ffcb6b; /* Yellow */
+    --ion-color-success: #9ece6a;
+    --ion-color-warning: #ffcb6b;
+    --ion-color-danger: #ff5370;
+    --ion-toolbar-background: #24283b;
+    --ion-item-background: #24283b;
+  }
+  .menu-icon {
+    color: white !important;
+  }
+  
+  ion-button {
+    --background: #7aa2f7;
+    --color: #ffffff;
+    box-shadow: 0px 0px 10px rgba(122, 162, 247, 0.8);
+  }
+  
+  ion-button:hover {
+    box-shadow: 0px 0px 20px rgba(122, 162, 247, 1);
+  }
+  
+
+.no-theme-button {
+    background: transparent; /* or any color you want */
+    box-shadow: none;
+  }
+  .no-theme-button:hover {
+    box-shadow: none !important;
+  }
+
+  .dashboard-placeholder {
+    width: 250px;
+    height: 250px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px dashed white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 12px;
+  }
+  
+  .ion-justify-content-center {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .ion-align-items-center {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+  .custom-menu-width {
+    --width: 250px; 
+  }
+  .custom-menu-height {
+      --height: 10px; 
+    }
+  
+  .menu-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    overflow-y: auto; 
+    
+  }
