@@ -1,63 +1,68 @@
-import { 
-  IonButtons,
-  IonContent, 
-  IonHeader, 
-  IonMenuButton, 
-  IonPage, 
-  IonTitle, 
+import { useState, useEffect } from 'react';
+import {
+  IonContent,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  IonPage,
+  IonHeader,
+  IonTitle,
   IonToolbar,
-  IonCard
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent
 } from '@ionic/react';
 
-import { useEffect, useState } from 'react';
-
 const Favorites: React.FC = () => {
-  const [catFact, setCatFact] = useState<string>('Loading cat fact...');
+  const [items, setItems] = useState<string[]>([]);
+  const [hasMore, setHasMore] = useState(true);
 
-  // Function to fetch a cat fact
-  const fetchCatFact = async () => {
+  const fetchCatFacts = async () => {
     try {
-      const response = await fetch('https://catfact.ninja/fact');
+      const response = await fetch('https://catfact.ninja/facts?limit=10');
       const data = await response.json();
-      setCatFact(data.fact);
+      return data.data.map((fact: { fact: string }) => fact.fact);
     } catch (error) {
-      setCatFact('Failed to load cat fact.');
-      console.error('Error fetching cat fact:', error);
+      console.error('Error fetching cat facts:', error);
+      return [];
     }
   };
 
-  // Fetch the cat fact when the component mounts
+  const loadMore = async (event: CustomEvent<void>) => {
+    const newFacts = await fetchCatFacts();
+    setItems((prevItems) => [...prevItems, ...newFacts]);
+
+    if (items.length + newFacts.length >= 50) {
+      setHasMore(false);
+    }
+
+    (event.target as HTMLIonInfiniteScrollElement)?.complete();
+  };
+
   useEffect(() => {
-    fetchCatFact();
+    fetchCatFacts().then((initialFacts) => setItems(initialFacts));
   }, []);
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonButtons slot='start'>
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
-          <IonTitle>Cat Facts</IonTitle> {/* Updated Widget Name */}
+          <IonTitle>Cat Facts</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100%',
-            flexDirection: 'column',
-            textAlign: 'center',
-            padding: '20px',
-          }}
-        >
-          <IonCard style={{ padding: '20px', width: '80%' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Random Cat Fact</h2>
-            <p style={{ fontSize: '28px', fontWeight: 'bold', marginTop: '10px' }}>{catFact}</p> {/* Large Text */}
+      <IonContent>
+        {items.map((fact, index) => (
+          <IonCard key={index}>
+            <IonCardHeader>
+              <IonCardTitle style={{ color: 'white' }}>Cat Fact {index + 1}</IonCardTitle>
+            </IonCardHeader>
+            <IonCardContent>{fact}</IonCardContent>
           </IonCard>
-        </div>
+        ))}
+
+        <IonInfiniteScroll onIonInfinite={loadMore} threshold="100px" disabled={!hasMore}>
+          <IonInfiniteScrollContent loadingText="Loading more cat facts..." />
+        </IonInfiniteScroll>
       </IonContent>
     </IonPage>
   );
