@@ -8,7 +8,7 @@ import {
       IonToolbar 
   } from '@ionic/react';
   
-  const Search: React.FC = () => {
+  const Logs: React.FC = () => {
     return (
       <IonPage>
         <IonHeader>
@@ -16,7 +16,7 @@ import {
             <IonButtons slot='start'>
               <IonMenuButton></IonMenuButton>
             </IonButtons>
-            <IonTitle>Search</IonTitle>
+            <IonTitle>Logs</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent fullscreen>
@@ -28,11 +28,11 @@ import {
             height: '100%',
           }}
         >
-          Search
+          Logs
         </div>
         </IonContent>
       </IonPage>
     );
   };
   
-  export default Search;
+  export default Logs;
