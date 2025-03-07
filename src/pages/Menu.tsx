@@ -74,15 +74,16 @@ const Menu: React.FC = () => {
                   </IonContent>
               </IonMenu>
               <IonRouterOutlet id="main">
-                  <Route exact path="/it35-lab/app/home" component={Home} />
-                  <Route exact path="/it35-lab/app/logs" component={Logs} />
-                  <Route exact path="/it35-lab/app/IncidentAndReport" component={IncidentAndReport} />
-                  <Route exact path="/it35-lab/app/AlertAndNotification" component={AlertAndNotification} />
-                  <Route exact path="/it35-lab/app/EventMonitoring" component={EventMonitoring} />
-                  <Route exact path="/it35-lab/app">
-                      <Redirect to="/it35-lab/app/home" />
-                  </Route>
-              </IonRouterOutlet>
+  <Route exact path="/it35-lab/app/home" component={Home} />
+  <Route exact path="/it35-lab/app/logs" component={Logs} />
+  <Route exact path="/it35-lab/app/IncidentAndReport" component={IncidentAndReport} />
+  <Route exact path="/it35-lab/app/AlertAndNotification" component={AlertAndNotification} />
+  <Route exact path="/it35-lab/app/EventMonitoring" component={EventMonitoring} />
+  <Route exact path="/it35-lab/app">
+    <Redirect to="/it35-lab/app/home" />
+  </Route>
+</IonRouterOutlet>
+
           </IonSplitPane>
       </IonPage>
       </>
