@@ -6,6 +6,7 @@ import {
   IonIcon, 
   IonInput, 
   IonItem, 
+  IonLabel, 
   IonNote, 
   IonPage, 
   IonTitle, 
@@ -64,7 +65,13 @@ const Login: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className='ion-padding'>
-      
+      <div style={{
+                  display: 'flex',
+                  flexDirection:'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+
+                }}>
       
     <IonItem lines="none" className="ion-text-center" style={{ justifyContent: 'center', alignItems: 'center'}}>
       <IonAvatar style={{ width: '150px', height: '150px', margin: '30px', display: 'flex'}}>
@@ -94,7 +101,7 @@ const Login: React.FC = () => {
 
 
         <div style={{ height: '50px'}}></div>
-        <IonButton onClick={doLogin} expand="full">
+        <IonButton onClick={doLogin} expand="full" style={{ height: '20px',width: '200px'}}>
           Login
         </IonButton>
 
@@ -120,10 +127,13 @@ const Login: React.FC = () => {
             </IonAvatar>
           </a>
         </div>
-        <IonNote style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>No Account?</IonNote>
+        <IonLabel style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          No Account? <a href="/signup"> Sign Up</a>
+        </IonLabel>
 
         <div className="ticker-container">
           <div className="ticker-text">{currentFact}</div>
+        </div>
         </div>
       </IonContent>
 
