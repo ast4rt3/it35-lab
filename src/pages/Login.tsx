@@ -2,6 +2,8 @@ import {
   IonButton,
   IonContent, 
   IonHeader, 
+  IonInput, 
+  IonItem, 
   IonPage, 
   IonTitle, 
   IonToolbar, 
@@ -59,6 +61,19 @@ const Login: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className='ion-padding'>
+      
+      
+    <IonItem lines="none" className="ion-text-center">
+      <img src="https://imgs.search.brave.com/vkbSq7AQTJknNciczCdf8uMJSmAPoMswIFnLic5T6pE/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMud2lraWEubm9j/b29raWUubmV0L3Np/bGx5LWNhdC9pbWFn/ZXMvNC80ZC9Nci5f/RnJlc2gucG5nL3Jl/dmlzaW9uL2xhdGVz/dD9jYj0yMDI0MDEx/NzE3MDY0Nw" alt="Centered Kitten" style={{ width: '150px', height: '150px', borderRadius: '50%' }} />
+    </IonItem>
+
+      <IonItem>
+        <IonInput label="Email" type="email" placeholder=""></IonInput>
+      </IonItem>
+      <IonItem>
+      <IonInput label="Password" type="password" value=""></IonInput>
+      </IonItem>
+
         <IonButton onClick={doLogin} expand="full">
           Login
         </IonButton>
