@@ -1,9 +1,12 @@
 import { 
+  IonAvatar,
   IonButton,
   IonContent, 
   IonHeader, 
+  IonIcon, 
   IonInput, 
   IonItem, 
+  IonNote, 
   IonPage, 
   IonTitle, 
   IonToolbar, 
@@ -63,28 +66,67 @@ const Login: React.FC = () => {
       <IonContent className='ion-padding'>
       
       
-    <IonItem lines="none" className="ion-text-center">
-      <img src="https://imgs.search.brave.com/vkbSq7AQTJknNciczCdf8uMJSmAPoMswIFnLic5T6pE/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMud2lraWEubm9j/b29raWUubmV0L3Np/bGx5LWNhdC9pbWFn/ZXMvNC80ZC9Nci5f/RnJlc2gucG5nL3Jl/dmlzaW9uL2xhdGVz/dD9jYj0yMDI0MDEx/NzE3MDY0Nw" alt="Centered Kitten" style={{ width: '150px', height: '150px', borderRadius: '50%' }} />
+    <IonItem lines="none" className="ion-text-center" style={{ justifyContent: 'center', alignItems: 'center'}}>
+      <IonAvatar style={{ width: '150px', height: '150px', margin: '30px', display: 'flex'}}>
+        <img src="https://imgs.search.brave.com/vkbSq7AQTJknNciczCdf8uMJSmAPoMswIFnLic5T6pE/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMud2lraWEubm9j/b29raWUubmV0L3Np/bGx5LWNhdC9pbWFn/ZXMvNC80ZC9Nci5f/RnJlc2gucG5nL3Jl/dmlzaW9uL2xhdGVz/dD9jYj0yMDI0MDEx/NzE3MDY0Nw" alt="Centered Kitten" />
+      </IonAvatar>
     </IonItem>
 
-      <IonItem>
-        <IonInput label="Email" type="email" placeholder=""></IonInput>
-      </IonItem>
-      <IonItem>
-      <IonInput label="Password" type="password" value=""></IonInput>
-      </IonItem>
+    <IonInput
+      type="email"
+      fill="solid"
+      label="Email"
+      labelPlacement="floating"
+      helperText="Enter a valid email"
+      errorText="Invalid email"
+      style={{ color: 'black', '--background': 'var(--ion-color-primary)', }}
+    ></IonInput>
+    
+        <IonInput
+      type="password"
+      fill="solid"
+      label="Password"
+      labelPlacement="floating"
+      helperText="Enter a valid password"
+      errorText="Invalid password"
+      style={{ color: 'black', '--background': 'var(--ion-color-primary)',top: '20px' }}
+    ></IonInput>
 
+
+        <div style={{ height: '50px'}}></div>
         <IonButton onClick={doLogin} expand="full">
           Login
         </IonButton>
 
-        {/* Scrolling Cat Fact at the Bottom */}
+
+        <IonNote style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Or Log in Using</IonNote>
+
+
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+
+          <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer">
+            <IonAvatar style={{ width: '50px', height: '50px', margin: '10px', display: 'flex', overflow: 'hidden' }}>
+              <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+            </IonAvatar>
+          </a>
+          <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer">
+            <IonAvatar style={{ width: '50px', height: '50px', margin: '10px', display: 'flex' }}>
+              <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" />
+            </IonAvatar>
+          </a>
+          <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer">
+            <IonAvatar style={{ width: '50px', height: '50px', margin: '10px', display: 'flex' }}>
+              <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" />
+            </IonAvatar>
+          </a>
+        </div>
+        <IonNote style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>No Account?</IonNote>
+
         <div className="ticker-container">
           <div className="ticker-text">{currentFact}</div>
         </div>
       </IonContent>
 
-      {/* Add Styles */}
       <style>
         {`
           .ticker-container {
