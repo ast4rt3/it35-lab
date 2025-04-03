@@ -84,7 +84,13 @@ const Login: React.FC = () => {
               ))}
             </div>
 
-            <IonLabel style={{ marginTop: '10px' }}>No Account? <a href="/signup"> Sign Up</a></IonLabel>
+            <IonLabel style={{ marginTop: '10px' }}>
+            No Account? 
+            <IonButton routerLink="/it35-lab/register" expand="full" fill="clear" shape="round">
+                  Sign Up
+            </IonButton>
+            </IonLabel>
+
           </div>
           
           {/* Border Line */}
@@ -96,7 +102,7 @@ const Login: React.FC = () => {
               <img src="https://i.pinimg.com/736x/aa/ec/16/aaec16b6c7fcd29d1d42d950265c5447.jpg" alt="dark blue logo" />
             </IonAvatar>
           </div>
-          
+          r
         </div>
       </IonContent>
     </IonPage>
