@@ -3,7 +3,6 @@ import {
   IonButton,
   IonContent, 
   IonHeader, 
-  IonIcon, 
   IonInput, 
   IonItem, 
   IonLabel, 
@@ -14,44 +13,41 @@ import {
   useIonRouter
 } from '@ionic/react';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../utils/supabaseClient';
+
+const registerUser = async (email: string, password: string) => {
+  const { user, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  if (error) {
+    console.error('Error registering user:', error.message);
+  } else {
+    console.log('User registered:', user);
+  }
+};
 
 const Login: React.FC = () => {
   const navigation = useIonRouter();
-  const [catFact, setCatFact] = useState<string>('Loading cat fact...');
-  const [queue, setQueue] = useState<string[]>([]); // Queue for multiple facts
   const [currentFact, setCurrentFact] = useState<string>('Loading cat fact...');
 
-  // Function to fetch cat facts continuously
-  const fetchCatFact = async () => {
-    try {
-      const response = await fetch('https://catfact.ninja/fact');
-      const data = await response.json();
-      
-      setQueue((prevQueue) => [...prevQueue, data.fact]); // Add to queue
-    } catch (error) {
-      console.error('Error fetching cat fact:', error);
-    }
-  };
-
-  // Fetch a cat fact initially and every 5 seconds
   useEffect(() => {
-    fetchCatFact(); // Initial fetch
-    const interval = setInterval(fetchCatFact, 10000); // Fetch every 5 seconds
+    const fetchCatFact = async () => {
+      try {
+        const response = await fetch('https://catfact.ninja/fact');
+        const data = await response.json();
+        setCurrentFact(data.fact);
+      } catch (error) {
+        console.error('Error fetching cat fact:', error);
+      }
+    };
+
+    fetchCatFact();
+    const interval = setInterval(fetchCatFact, 10000);
     return () => clearInterval(interval);
   }, []);
-
-  // Rotate facts every 5 seconds
-  useEffect(() => {
-    if (queue.length > 0) {
-      const interval = setInterval(() => {
-        setCurrentFact(queue[0]); // Show first fact
-        setQueue((prevQueue) => prevQueue.slice(1)); // Remove first fact
-      }, 10000);
-
-      return () => clearInterval(interval);
-    }
-  }, [queue]);
 
   const doLogin = () => {
     navigation.push('/it35-lab/app', 'forward', 'replace');
@@ -64,105 +60,50 @@ const Login: React.FC = () => {
           <IonTitle>Login</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className='ion-padding'>
-      <div style={{
-                  display: 'flex',
-                  flexDirection:'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+      <IonContent className='ion-padding' fullscreen style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
+          
+          {/* Left Side - Registration Form */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <label style={{ alignSelf: 'flex-start', marginLeft: '10%', marginBottom: '5px' }}>Email</label>
+            <IonItem lines="none" className="ion-text-center" style={{ width: '80%' }}>
+              <IonInput type="email" fill="solid" labelPlacement="floating" helperText="Enter a valid email" errorText="Invalid email" style={{ color: 'black' }} />
+            </IonItem>
+            
+            <label style={{ alignSelf: 'flex-start', marginLeft: '10%', marginTop: '15px', marginBottom: '5px' }}>Password</label>
+            <IonItem lines="none" className="ion-text-center" style={{ width: '80%' }}>
+              <IonInput type="password" fill="solid" labelPlacement="floating" helperText="Enter a valid password" errorText="Invalid password" style={{ color: 'black' }} />
+            </IonItem>
 
-                }}>
-      
-    <IonItem lines="none" className="ion-text-center" style={{ justifyContent: 'center', alignItems: 'center'}}>
-      <IonAvatar style={{ width: '150px', height: '150px', margin: '30px', display: 'flex'}}>
-        <img src="https://imgs.search.brave.com/vkbSq7AQTJknNciczCdf8uMJSmAPoMswIFnLic5T6pE/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMud2lraWEubm9j/b29raWUubmV0L3Np/bGx5LWNhdC9pbWFn/ZXMvNC80ZC9Nci5f/RnJlc2gucG5nL3Jl/dmlzaW9uL2xhdGVz/dD9jYj0yMDI0MDEx/NzE3MDY0Nw" alt="Centered Kitten" />
-      </IonAvatar>
-    </IonItem>
+            <IonButton onClick={doLogin} expand="full" style={{ marginTop: '20px', width: '80%' }}>
+              Login
+            </IonButton>
 
-    <IonInput
-      type="email"
-      fill="solid"
-      label="Email"
-      labelPlacement="floating"
-      helperText="Enter a valid email"
-      errorText="Invalid email"
-      style={{ color: 'black', '--background': 'var(--ion-color-primary)', }}
-    ></IonInput>
-    
-        <IonInput
-      type="password"
-      fill="solid"
-      label="Password"
-      labelPlacement="floating"
-      helperText="Enter a valid password"
-      errorText="Invalid password"
-      style={{ color: 'black', '--background': 'var(--ion-color-primary)',top: '20px' }}
-    ></IonInput>
+            <IonNote style={{ marginTop: '15px' }}>Or Log in Using</IonNote>
 
+            <div style={{ display: 'flex', marginTop: '10px' }}>
+              {[...Array(3)].map((_, index) => (
+                <IonAvatar key={index} style={{ width: '50px', height: '50px', margin: '10px' }}>
+                  <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" />
+                </IonAvatar>
+              ))}
+            </div>
 
-        <div style={{ height: '50px'}}></div>
-        <IonButton onClick={doLogin} expand="full" style={{ height: '20px',width: '200px'}}>
-          Login
-        </IonButton>
-
-
-        <IonNote style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Or Log in Using</IonNote>
-
-
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-
-          <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer">
-            <IonAvatar style={{ width: '50px', height: '50px', margin: '10px', display: 'flex', overflow: 'hidden' }}>
-              <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+            <IonLabel style={{ marginTop: '10px' }}>No Account? <a href="/signup"> Sign Up</a></IonLabel>
+          </div>
+          
+          {/* Border Line */}
+          <div style={{ width: '2px', backgroundColor: 'white', height: '80%', alignSelf: 'center' }}></div>
+          
+          {/* Right Side - Logo */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a1b26', height: '100%' }}>
+            <IonAvatar style={{ width: '200px', height: '200px' }}>
+              <img src="https://i.pinimg.com/736x/aa/ec/16/aaec16b6c7fcd29d1d42d950265c5447.jpg" alt="dark blue logo" />
             </IonAvatar>
-          </a>
-          <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer">
-            <IonAvatar style={{ width: '50px', height: '50px', margin: '10px', display: 'flex' }}>
-              <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" />
-            </IonAvatar>
-          </a>
-          <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer">
-            <IonAvatar style={{ width: '50px', height: '50px', margin: '10px', display: 'flex' }}>
-              <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" />
-            </IonAvatar>
-          </a>
-        </div>
-        <IonLabel style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          No Account? <a href="/signup"> Sign Up</a>
-        </IonLabel>
-
-        <div className="ticker-container">
-          <div className="ticker-text">{currentFact}</div>
-        </div>
+          </div>
+          
         </div>
       </IonContent>
-
-      <style>
-        {`
-          .ticker-container {
-            position: absolute;
-            bottom: 10px;
-            width: 98%;
-            overflow: hidden;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            white-space: nowrap;
-          }
-
-          .ticker-text {
-            display: inline-block;
-            padding-left: 100%;
-            animation: ticker 30s linear infinite;
-          }
-
-          @keyframes ticker {
-            from { transform: translateX(100%); }
-            to { transform: translateX(-100%); }
-          }
-        `}
-      </style>
     </IonPage>
   );
 };
