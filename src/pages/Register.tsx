@@ -19,6 +19,7 @@ import React, { useState } from 'react';
      IonCardTitle,
      IonAvatar,
  } from '@ionic/react';
+import { supabase } from '../utils/supabaseClient';
  
  const Register: React.FC = () => {
      const [username, setUsername] = useState('');
@@ -43,13 +44,41 @@ import React, { useState } from 'react';
          setShowVerificationModal(true);
      };
  
-      const doRegister = async () => {
-         
-         setShowVerificationModal(false);
-         
-         setShowSuccessModal(true);
-     };
- 
+     const doRegister = async () => {
+        if (!email.endsWith("@nbsc.edu.ph")) {
+            alert("Only @nbsc.edu.ph emails are allowed to register.");
+            return;
+        }
+    
+        if (password !== confirmPassword) {
+            alert("Passwords do not match.");
+            return;
+        }
+    
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        username: username,
+                    },
+                },
+            });
+    
+            if (error) {
+                throw error;
+            }
+    
+            console.log("User registered:", data);
+            alert("Registration successful! Check your email to confirm your account.");
+            setShowVerificationModal(false);
+            setShowSuccessModal(true);
+        } catch (err: any) {
+            alert(err.message);
+            console.error("Registration error:", err);
+        }
+    };
      return (
          <IonPage>
              
