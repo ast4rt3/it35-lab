@@ -17,9 +17,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 
 const Login: React.FC = () => {
+  const navigation = useIonRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigation = useIonRouter();
+
   
   useEffect(() => {
     const fetchCatFact = async () => {
@@ -38,14 +39,14 @@ const Login: React.FC = () => {
   }, []);
 
   const handleLogin = async () => {
-    const { user, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       console.error('Login Error:', error.message);
     } else {
-      console.log('User logged in:', user);
       navigation.push('/it35-lab/app', 'forward', 'replace');
     }
+    
   };
 
   return (
@@ -110,3 +111,7 @@ const Login: React.FC = () => {
 };
 
 export default Login;
+function setCurrentFact(fact: any) {
+  throw new Error('Function not implemented.');
+}
+
