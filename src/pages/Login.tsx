@@ -15,27 +15,12 @@ import {
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
-import bcrypt from 'bcryptjs';
-
-const registerUser = async (email: string, password: string) => {
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const { user, error } = await supabase.auth.signUp({
-    email,
-    password: hashedPassword,
-  });
-
-  if (error) {
-    console.error('Error registering user:', error.message);
-  } else {
-    console.log('User registered:', user);
-  }
-};
 
 const Login: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigation = useIonRouter();
-  const [currentFact, setCurrentFact] = useState<string>('Loading cat fact...');
-
+  
   useEffect(() => {
     const fetchCatFact = async () => {
       try {
@@ -52,8 +37,15 @@ const Login: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const doLogin = () => {
-    navigation.push('/it35-lab/app', 'forward', 'replace');
+  const handleLogin = async () => {
+    const { user, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      console.error('Login Error:', error.message);
+    } else {
+      console.log('User logged in:', user);
+      navigation.push('/it35-lab/app', 'forward', 'replace');
+    }
   };
 
   return (
@@ -63,22 +55,22 @@ const Login: React.FC = () => {
           <IonTitle>Login</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className='ion-padding' fullscreen style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <IonContent className="ion-padding" fullscreen style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
         <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
-          
-          {/* Left Side - Registration Form */}
+
+          {/* Left Side - Login Form */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <label style={{ alignSelf: 'flex-start', marginLeft: '10%', marginBottom: '5px' }}>Email</label>
             <IonItem lines="none" className="ion-text-center" style={{ width: '80%' }}>
-              <IonInput type="email" fill="solid" labelPlacement="floating" helperText="Enter a valid email" errorText="Invalid email" style={{ color: 'black' }} />
+              <IonInput type="email" value={email} onIonChange={e => setEmail(e.detail.value!)} fill="solid" labelPlacement="floating" helperText="Enter a valid email" errorText="Invalid email" style={{ color: 'black' }} />
             </IonItem>
             
             <label style={{ alignSelf: 'flex-start', marginLeft: '10%', marginTop: '15px', marginBottom: '5px' }}>Password</label>
             <IonItem lines="none" className="ion-text-center" style={{ width: '80%' }}>
-              <IonInput type="password" fill="solid" labelPlacement="floating" helperText="Enter a valid password" errorText="Invalid password" style={{ color: 'black' }} />
+              <IonInput type="password" value={password} onIonChange={e => setPassword(e.detail.value!)} fill="solid" labelPlacement="floating" helperText="Enter a valid password" errorText="Invalid password" style={{ color: 'black' }} />
             </IonItem>
 
-            <IonButton onClick={doLogin} expand="full" style={{ marginTop: '20px', width: '80%' }}>
+            <IonButton onClick={handleLogin} expand="full" style={{ marginTop: '20px', width: '80%' }}>
               Login
             </IonButton>
 
