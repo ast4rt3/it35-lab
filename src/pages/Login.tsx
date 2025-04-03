@@ -15,11 +15,14 @@ import {
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import bcrypt from 'bcryptjs';
 
 const registerUser = async (email: string, password: string) => {
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   const { user, error } = await supabase.auth.signUp({
     email,
-    password,
+    password: hashedPassword,
   });
 
   if (error) {
