@@ -32,7 +32,7 @@ const Favorites: React.FC = () => {
     const newFacts = await fetchCatFacts();
     setItems((prevItems) => [...prevItems, ...newFacts]);
 
-    if (items.length + newFacts.length >= 50) {
+    if (items.length + newFacts.length >= 100) {
       setHasMore(false);
     }
 
