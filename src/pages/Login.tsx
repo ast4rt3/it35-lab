@@ -1,54 +1,37 @@
 import { 
+  IonAvatar,
   IonButton,
   IonContent, 
   IonHeader, 
+  IonInput, 
+  IonItem, 
+  IonLabel, 
+  IonNote, 
   IonPage, 
   IonTitle, 
   IonToolbar, 
   useIonRouter
 } from '@ionic/react';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../utils/supabaseClient';
 
 const Login: React.FC = () => {
   const navigation = useIonRouter();
-  const [catFact, setCatFact] = useState<string>('Loading cat fact...');
-  const [queue, setQueue] = useState<string[]>([]); // Queue for multiple facts
-  const [currentFact, setCurrentFact] = useState<string>('Loading cat fact...');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  // Function to fetch cat facts continuously
-  const fetchCatFact = async () => {
-    try {
-      const response = await fetch('https://catfact.ninja/fact');
-      const data = await response.json();
-      
-      setQueue((prevQueue) => [...prevQueue, data.fact]); // Add to queue
-    } catch (error) {
-      console.error('Error fetching cat fact:', error);
+  
+
+  const handleLogin = async () => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      console.error('Login Error:', error.message);
+    } else {
+      navigation.push('/it35-lab/app', 'forward', 'replace');
     }
-  };
-
-  // Fetch a cat fact initially and every 5 seconds
-  useEffect(() => {
-    fetchCatFact(); // Initial fetch
-    const interval = setInterval(fetchCatFact, 10000); // Fetch every 5 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  // Rotate facts every 5 seconds
-  useEffect(() => {
-    if (queue.length > 0) {
-      const interval = setInterval(() => {
-        setCurrentFact(queue[0]); // Show first fact
-        setQueue((prevQueue) => prevQueue.slice(1)); // Remove first fact
-      }, 10000);
-
-      return () => clearInterval(interval);
-    }
-  }, [queue]);
-
-  const doLogin = () => {
-    navigation.push('/it35-lab/app', 'forward', 'replace');
+    
   };
 
   return (
@@ -58,46 +41,78 @@ const Login: React.FC = () => {
           <IonTitle>Login</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className='ion-padding'>
-        <IonButton onClick={doLogin} expand="full">
-          Login
-        </IonButton>
+      <IonContent className="ion-padding" fullscreen style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
 
-        {/* Scrolling Cat Fact at the Bottom */}
-        <div className="ticker-container">
-          <div className="ticker-text">{currentFact}</div>
+          {/* Left Side*/}
+
+            <h1 style={{ 
+            position: 'absolute', 
+            top: '15%', 
+            left: '15%', 
+            transform: 'translate(-50%, -50%)', 
+            fontSize: '3rem', 
+            fontWeight: 'bold', 
+           
+            }}>
+            Header test
+            </h1>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <label style={{ alignSelf: 'flex-start', marginLeft: '10%', marginBottom: '5px', fontSize: '20px'  }}>Email</label>
+            <IonItem lines="none" className="ion-text-center" style={{ width: '80%' }}>
+              <IonInput type="email" value={email} onIonChange={e => setEmail(e.detail.value!)} fill="solid" labelPlacement="floating" helperText="Enter a valid email" errorText="Invalid email" style={{ color: 'black' }} />
+            </IonItem>
+            
+            <label style={{ alignSelf: 'flex-start', marginLeft: '10%', marginTop: '15px', marginBottom: '5px', fontSize: '20px'   }}>Password</label>
+            <IonItem lines="none" className="ion-text-center" style={{ width: '80%' }}>
+              <IonInput type="password" value={password} onIonChange={e => setPassword(e.detail.value!)} fill="solid" labelPlacement="floating" helperText="Enter a valid password" errorText="Invalid password" style={{ color: 'black' }} />
+            </IonItem>
+
+            <IonButton onClick={handleLogin} expand="full" style={{ marginTop: '20px', width: '80%' }}>
+              Login
+            </IonButton>
+
+            <IonNote style={{ marginTop: '15px' }}>Or Log in Using</IonNote>
+
+            <div style={{ display: 'flex', marginTop: '10px' }}>
+                <IonAvatar style={{ width: '40px', height: '50px', margin: '10px' }}>
+                  <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" />
+                </IonAvatar>
+                <IonAvatar style={{ width: '50px', height: '50px', margin: '10px' }}>
+                  <img src="https://static.vecteezy.com/system/resources/previews/018/930/476/original/facebook-logo-facebook-icon-transparent-free-png.png" alt="Gmail icon" />
+                </IonAvatar>
+                <IonAvatar style={{ width: '50px', height: '50px', margin: '10px' }}>
+                  <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" />
+                </IonAvatar>
+            </div>
+
+            <IonLabel style={{ marginTop: '10px' }}>
+            No Account? 
+            <a href="/it35-lab/register" >
+                  Sign Up
+            </a>
+            </IonLabel>
+
+          </div>
+          
+          {/* Border Line */}
+            <div style={{ width: '2px', backgroundColor: 'white', height: '80%', alignSelf: 'center', opacity: 0.3, boxShadow: 'rgba(14, 63, 126, 0.04) 0px 0px 0px 1px, rgba(42, 51, 69, 0.04) 0px 1px 1px -0.5px, rgba(42, 51, 70, 0.04) 0px 3px 3px -1.5px, rgba(42, 51, 70, 0.04) 0px 6px 6px -3px, rgba(14, 63, 126, 0.04) 0px 12px 12px -6px, rgba(14, 63, 126, 0.04) 0px 24px 24px -12px' }}></div>
+        
+          {/* Logo */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a1b26', height: '100%' }}>
+            <IonAvatar style={{ width: '200px', height: '200px' }}>
+              <img src="https://i.pinimg.com/736x/aa/ec/16/aaec16b6c7fcd29d1d42d950265c5447.jpg" alt="dark blue logo" />
+            </IonAvatar>
+          </div>
+          
         </div>
       </IonContent>
-
-      {/* Add Styles */}
-      <style>
-        {`
-          .ticker-container {
-            position: absolute;
-            bottom: 10px;
-            width: 98%;
-            overflow: hidden;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            white-space: nowrap;
-          }
-
-          .ticker-text {
-            display: inline-block;
-            padding-left: 100%;
-            animation: ticker 30s linear infinite;
-          }
-
-          @keyframes ticker {
-            from { transform: translateX(100%); }
-            to { transform: translateX(-100%); }
-          }
-        `}
-      </style>
     </IonPage>
   );
 };
 
 export default Login;
+function setCurrentFact(fact: any) {
+  throw new Error('Function not implemented.');
+}
+
