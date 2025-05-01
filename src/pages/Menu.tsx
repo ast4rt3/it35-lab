@@ -13,7 +13,7 @@ import {
     IonTitle, 
     IonToolbar,
     useIonRouter
-  } from '@ionic/react'
+  } from '@ionic/react';
   import {
     homeOutline,
     logOutOutline, 
@@ -31,11 +31,43 @@ import {
   import AlertAndNotification from './AlertAndNotification';
   import EventMonitoring from './EventMonitoring';
   import { supabase } from '../utils/supabaseClient';
-  import { useState } from 'react';
+  import { useEffect, useState } from 'react';
   import EditProfilePage from './EditProfilePage';
   
   const Menu: React.FC = () => {
     const router = useIonRouter();
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+  
+    useEffect(() => {
+      // Check if user is authenticated
+      const checkAuth = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+        setLoading(false);
+        
+        if (!user) {
+          router.push('/it35-lab', 'forward', 'replace');
+        }
+      };
+  
+      checkAuth();
+  
+      // Listen for auth state changes
+      const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN') {
+          setUser(session?.user ?? null);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          router.push('/it35-lab', 'forward', 'replace');
+        }
+      });
+  
+      return () => {
+        authListener.subscription.unsubscribe();
+      };
+    }, [router]);
+  
     const path = [
       {name:'Home', url: '/it35-lab/app/home', icon: homeOutline},
       {name:'Logs', url: '/it35-lab/app/Logs', icon: bookOutline},
@@ -46,13 +78,29 @@ import {
     ];
   
     const handleLogout = async () => {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+      } catch (error) {
         console.error('Error logging out:', error);
-        return;
       }
-      router.push('/it35-lab', 'forward', 'replace');
     };
+  
+    if (loading) {
+      return (
+        <IonPage>
+          <IonContent>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+              <p>Loading...</p>
+            </div>
+          </IonContent>
+        </IonPage>
+      );
+    }
+  
+    if (!user) {
+      return <Redirect to="/it35-lab" />;
+    }
   
     return (
       <>
