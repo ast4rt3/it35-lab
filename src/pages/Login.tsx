@@ -10,6 +10,7 @@ import {
   IonNote,  
   IonPage,  
   IonToast,  
+  IonRouterLink,
   useIonRouter
 } from '@ionic/react';
 import { logoIonic } from 'ionicons/icons';
@@ -163,19 +164,19 @@ const Login: React.FC = () => {
             <IonNote style={{ marginTop: '15px', color: '#757575' }}>Or Log in Using</IonNote>
 
             <div style={{ display: 'flex', marginTop: '10px' }}>
-              <IonAvatar style={{ width: '40px', height: '50px', margin: '10px', cursor: 'pointer', transition: 'transform 0.2s', ':hover': { transform: 'scale(1.1)' } }}>
+              <IonAvatar style={{ width: '40px', height: '50px', margin: '10px', cursor: 'pointer', transition: 'transform 0.2s' }}>
                 <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" />
               </IonAvatar>
-              <IonAvatar style={{ width: '50px', height: '50px', margin: '10px', cursor: 'pointer', transition: 'transform 0.2s', ':hover': { transform: 'scale(1.1)' } }}>
+              <IonAvatar style={{ width: '50px', height: '50px', margin: '10px', cursor: 'pointer', transition: 'transform 0.2s' }}>
                 <img src="https://static.vecteezy.com/system/resources/previews/018/930/476/original/facebook-logo-facebook-icon-transparent-free-png.png" alt="Facebook icon" />
               </IonAvatar>
-              <IonAvatar style={{ width: '50px', height: '50px', margin: '10px', cursor: 'pointer', transition: 'transform 0.2s', ':hover': { transform: 'scale(1.1)' } }}>
+              <IonAvatar style={{ width: '50px', height: '50px', margin: '10px', cursor: 'pointer', transition: 'transform 0.2s' }}>
                 <img src="https://mailmeteor.com/logos/assets/PNG/Gmail_Logo_512px.png" alt="Gmail icon" />
               </IonAvatar>
             </div>
 
             <IonLabel style={{ marginTop: '10px', color: '#757575' }}>
-              No Account? <a href="/it35-lab/register" style={{ color: '#3880ff', textDecoration: 'none' }}>Sign Up</a>
+              No Account? <IonRouterLink routerLink="/it35-lab/register" style={{ color: '#3880ff', textDecoration: 'none' }}>Sign Up</IonRouterLink>
             </IonLabel>
           </div>
 

@@ -5,13 +5,13 @@ import { supabase } from '../utils/supabaseClient';
 
 const AuthGuard = ({ children }: { children: JSX.Element }) => {
   const [loading, setLoading] = useState(true);
-  const history = useHistory();
+  const history = useHistory(); // Use useHistory instead of useNavigate
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        history.replace('/login'); // Redirect to login if no session
+        history.push('/login'); // Redirect to login if no session
       }
       setLoading(false);
     };
@@ -26,9 +26,9 @@ const AuthGuard = ({ children }: { children: JSX.Element }) => {
     return () => {
       listener.subscription.unsubscribe();
     };
-  }, [history]);
+  }, [history]); // Add history to the dependency array
 
-  if (loading) return null; // or a loading spinner
+  if (loading) return null; // Or a loading spinner
 
   return children;
 };
