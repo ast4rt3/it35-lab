@@ -50,7 +50,7 @@ const Login: React.FC = () => {
 
     setShowToast(true); 
     setTimeout(() => {
-      navigation.push('/it35-lab/app', 'forward', 'replace');
+      navigation.push('/it35-lab/app/home', 'forward', 'replace');
     }, 300);
   };
   
@@ -68,6 +68,7 @@ const Login: React.FC = () => {
               fontSize: '3rem',
               fontWeight: 'bold',
             }}>
+              Welcome Back
             </h1>
 
             <div style={{ width: '80%', marginBottom: '30px' }}>

@@ -99,49 +99,27 @@ const Register: React.FC = () => {
                 password,
                 options: {
                     data: {
-                        // Storing names here too is optional, but can be useful if you need them immediately after signup before profile fetch
                         username: username,
-                        first_name: firstName, // <-- Optional: Add to auth metadata
-                        last_name: lastName,   // <-- Optional: Add to auth metadata
+                        first_name: firstName,
+                        last_name: lastName,
                     },
-                    // emailRedirectTo: 'YOUR_APP_VERIFICATION_URL', // If email verification is enabled
                 },
             });
 
             if (signUpError) throw signUpError;
             if (!authData.user || !authData.user.id) throw new Error("Registration completed but user ID is missing.");
 
-            const userId = authData.user.id;
-            console.log("User registered with Auth:", authData.user);
-
-            // *** ADD A SMALL DELAY HERE ***
-            console.log("Signup complete. Adding small delay before profile insert...");
-            await new Promise(resolve => setTimeout(resolve, 100)); // Wait 100 milliseconds (adjust if needed)
-            console.log("Delay finished. Attempting profile insert...");
-            // *** END OF DELAY ***
-
-
-            // 2. Insert into custom 'users' table (using state variables)
-            const { error: insertError } = await supabase.from('users').insert([
-                {
-                    id: userId, // This is the ID we are trying to match with auth.uid() via RLS
-                    username: username.trim(),
-                    email: email.trim(), // Assuming email is stored in the users table
-                    user_firstname: firstName.trim(), // <-- Use state variable
-                    user_lastname: lastName.trim(),   // <-- Use state variable
-                    user_avatar_url: null,          // Default avatar
-                    // Add created_at/updated_at here if not handled by DB defaults
-                    // created_at: new Date().toISOString(),
-                    // updated_at: new Date().toISOString(),
-                },
-            ]);
-
-            if (insertError) {
-                 console.error("Insert into custom 'users' table failed:", insertError.message);
-                throw new Error("Account created, but profile setup failed. Please contact support.");
-            }
-
-            console.log("Inserted into custom users table successfully for user ID:", userId);
+            // Store registration data in localStorage for profile creation after verification
+            localStorage.setItem('pendingProfile', JSON.stringify({
+                id: authData.user.id,
+                username: username.trim(),
+                email: email.trim(),
+                user_firstname: firstName.trim(),
+                user_lastname: lastName.trim(),
+                user_avatar_url: null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            }));
 
             // 3. Success - Show confirmation
             setShowVerificationModal(false);
@@ -150,16 +128,15 @@ const Register: React.FC = () => {
         } catch (err: any) {
             setShowVerificationModal(false);
             console.error("Registration process error:", err);
+            
             // Map common Supabase errors to friendlier messages
-             if (err.message.includes("User already registered")) {
-                 displayError("An account with this email already exists.");
+            if (err.message.includes("User already registered")) {
+                displayError("An account with this email already exists.");
             } else if (err.message.includes("duplicate key value violates unique constraint")) {
-                 // This might happen if username is unique and already taken, adjust constraint name if needed
-                 displayError("This username is already taken. Please choose another one.");
+                displayError("This username is already taken. Please choose another one.");
+            } else {
+                displayError("Registration failed. Please try again or contact support.");
             }
-             else {
-                 displayError(err.message || "An unexpected error occurred during registration.");
-             }
         }
     };
 
@@ -322,7 +299,7 @@ const Register: React.FC = () => {
                         <IonText>
                             <h2 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--ion-color-primary)', marginBottom: '15px' }}>Registration Successful 🎉</h2>
                             <p style={{ fontSize: '1rem', color: '#757575', margin: '0 auto 25px auto', maxWidth: '350px' }}>
-                                Your account has been created. Please check your email ({email}) to verify your account before logging in.
+                                Your account has been created. Please check your email ({email}) to verify your account. After verifying your email, you can log in to complete your profile setup.
                             </p>
                         </IonText>
                         <IonButton onClick={handleSuccessModalDismiss} color="primary" style={{ '--border-radius': '25px', '--padding-top': '15px', '--padding-bottom': '15px', minWidth: '180px' }}>
