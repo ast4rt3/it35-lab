@@ -93,6 +93,8 @@ const Register: React.FC = () => {
         }
 
         try {
+            console.log('Starting registration process...');
+            
             // 1. Sign up with Supabase Auth
             const { data: authData, error: signUpError } = await supabase.auth.signUp({
                 email,
@@ -106,20 +108,52 @@ const Register: React.FC = () => {
                 },
             });
 
-            if (signUpError) throw signUpError;
-            if (!authData.user || !authData.user.id) throw new Error("Registration completed but user ID is missing.");
+            if (signUpError) {
+                console.error('Auth signup error:', signUpError);
+                if (signUpError.message.includes("For security purposes")) {
+                    throw new Error("Too many registration attempts. Please wait a minute before trying again.");
+                }
+                throw signUpError;
+            }
+            
+            if (!authData.user || !authData.user.id) {
+                console.error('No user data returned from auth signup');
+                throw new Error("Registration completed but user ID is missing.");
+            }
 
-            // Store registration data in localStorage for profile creation after verification
-            localStorage.setItem('pendingProfile', JSON.stringify({
-                id: authData.user.id,
-                username: username.trim(),
-                email: email.trim(),
-                user_firstname: firstName.trim(),
-                user_lastname: lastName.trim(),
-                user_avatar_url: null,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-            }));
+            console.log('Auth signup successful, creating user record...');
+
+            // 2. Create user record in the database
+            const { data: userData, error: insertError } = await supabase
+                .from('users')
+                .insert([
+                    {
+                        id: authData.user.id,
+                        email: email.trim(),
+                        username: username.trim(),
+                        user_firstname: firstName.trim(),
+                        user_lastname: lastName.trim(),
+                        user_avatar_url: null,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    }
+                ])
+                .select()
+                .single();
+
+            if (insertError) {
+                console.error('Error creating user record:', insertError);
+                if (insertError.code === '23505') {
+                    if (insertError.message.includes('users_email_key')) {
+                        throw new Error('This email is already registered. Please use a different email or try logging in.');
+                    } else if (insertError.message.includes('users_username_key')) {
+                        throw new Error('This username is already taken. Please choose a different username.');
+                    }
+                }
+                throw new Error(`Failed to create user profile: ${insertError.message}`);
+            }
+
+            console.log('User record created successfully:', userData);
 
             // 3. Success - Show confirmation
             setShowVerificationModal(false);
@@ -134,6 +168,10 @@ const Register: React.FC = () => {
                 displayError("An account with this email already exists.");
             } else if (err.message.includes("duplicate key value violates unique constraint")) {
                 displayError("This username is already taken. Please choose another one.");
+            } else if (err.message.includes("Failed to create user profile")) {
+                displayError(err.message);
+            } else if (err.message.includes("Too many registration attempts")) {
+                displayError(err.message);
             } else {
                 displayError("Registration failed. Please try again or contact support.");
             }

@@ -1,322 +1,266 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  IonContent, IonPage, IonInput, IonButton, IonAlert, IonHeader, IonToolbar, IonTitle,
-  IonBackButton, IonButtons, IonItem, IonText, IonCol, IonGrid,
-  IonRow, IonInputPasswordToggle, IonImg, IonAvatar, IonSpinner, IonLabel,
+  IonContent,
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonMenuButton,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonButton,
+  IonImg,
+  IonSpinner,
+  IonAlert,
+  IonAvatar,
+  IonIcon,
+  IonCard,
+  IonCardContent,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonText,
+  IonModal,
 } from '@ionic/react';
+import { cameraOutline, mailOutline, personOutline, saveOutline, lockClosedOutline } from 'ionicons/icons';
 import { supabase } from '../utils/supabaseClient';
-import { useHistory } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import './EditProfilePage.css';
 
-const EditAccount: React.FC = () => {
+const EditProfilePage: React.FC = () => {
+  const { user, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [profileNotFound, setProfileNotFound] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    currentPassword: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    username: ''
+    username: '',
+    user_firstname: '',
+    user_lastname: '',
+    user_avatar_url: null as string | null,
+    email: '',
   });
-  const [currentEmail, setCurrentEmail] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertHeader, setAlertHeader] = useState('');
-  const [alertMessage, setAlertMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [profileNotFound, setProfileNotFound] = useState(false);
-  const history = useHistory();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      setIsLoading(true);
+    console.log('EditProfilePage mounted, authLoading:', authLoading, 'user:', user);
+    if (!authLoading) {
+      if (user) {
+        fetchUserData();
+      } else {
+        console.log('No user found, setting loading to false');
+        setLoading(false);
+      }
+    }
+  }, [user, authLoading]);
+
+  const fetchUserData = async () => {
+    try {
+      console.log('Fetching user data for:', user?.id);
+      setLoading(true);
       setProfileNotFound(false);
-      try {
-        // First check if we have a valid session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !session) {
-          console.error('No valid session found:', sessionError);
-          history.push('/it35-lab');
-          return;
-        }
+      setError(null);
 
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const { data: existingUser, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
 
-        if (authError || !user || !user.id) {
-          console.error('Authentication error or user not found:', authError);
-          history.push('/it35-lab');
-          return;
-        }
+      console.log('User fetch result:', { existingUser, fetchError });
 
-        setCurrentEmail(user.email || 'No email found');
+      if (fetchError) {
+        if (fetchError.code === 'PGRST116') {
+          console.log('User not found, creating new user');
+          const { error: insertError } = await supabase
+            .from('users')
+            .insert([
+              {
+                id: user?.id,
+                email: user?.email,
+                username: user?.email?.split('@')[0] || 'user',
+                user_firstname: '',
+                user_lastname: '',
+                user_avatar_url: null
+              }
+            ]);
 
-        // Modified query with proper headers and format
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('username, user_firstname, user_lastname, user_avatar_url')
-          .eq('id', user.id)
-          .single();
-
-        if (userError) {
-          console.error('Error fetching user data:', userError);
-          if (userError.code === 'PGRST116') {
-            setProfileNotFound(true);
-          } else {
-            setAlertHeader('Profile Error');
-            setAlertMessage('Could not load profile data. Please try again later.');
-            setShowAlert(true);
+          if (insertError) {
+            console.error('Error creating user:', insertError);
+            throw insertError;
           }
-          setIsLoading(false);
-          return;
+
+          console.log('New user created successfully');
+          setFormData({
+            username: user?.email?.split('@')[0] || 'user',
+            user_firstname: '',
+            user_lastname: '',
+            user_avatar_url: null,
+            email: user?.email || ''
+          });
+        } else {
+          console.error('Error fetching user:', fetchError);
+          throw fetchError;
         }
-
-        if (!userData) {
-          console.error('No user data found');
-          setProfileNotFound(true);
-          setIsLoading(false);
-          return;
+      } else if (existingUser) {
+        console.log('Existing user found:', existingUser);
+        setFormData({
+          username: existingUser.username || '',
+          user_firstname: existingUser.user_firstname || '',
+          user_lastname: existingUser.user_lastname || '',
+          user_avatar_url: existingUser.user_avatar_url,
+          email: existingUser.email || user?.email || ''
+        });
+        if (existingUser.user_avatar_url) {
+          setAvatarPreview(existingUser.user_avatar_url);
         }
-
-        setFormData(prev => ({
-          ...prev,
-          firstName: userData.user_firstname || '',
-          lastName: userData.user_lastname || '',
-          username: userData.username || ''
-        }));
-        setAvatarPreview(userData.user_avatar_url);
-
-      } catch (error: any) {
-        console.error('Error in fetchUserData:', error);
-        setAlertHeader('Loading Error');
-        setAlertMessage(error.message || 'Failed to load profile data. Please try again later.');
-        setShowAlert(true);
-      } finally {
-        setIsLoading(false);
       }
-    };
-
-    fetchUserData();
-  }, [history]);
-
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        setAlertHeader('File Error');
-        setAlertMessage('Please select an image file (JPEG, PNG, GIF, WebP).');
-        setShowAlert(true);
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        setAlertHeader('File Error');
-        setAlertMessage('Image size must be less than 5MB.');
-        setShowAlert(true);
-        return;
-      }
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
+    } catch (err) {
+      console.error('Error in fetchUserData:', err);
+      setError('Failed to load profile data. Please try again.');
+    } finally {
+      console.log('Setting loading to false');
+      setLoading(false);
     }
   };
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
-  const uploadAvatar = async (file: File, userId: string): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}_${Date.now()}.${fileExt}`;
-    const filePath = `public/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('user-avatars')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true,
-      });
-
-    if (uploadError) {
-      console.error('Avatar upload error:', uploadError);
-      throw new Error(`Failed to upload avatar: ${uploadError.message}`);
-    }
-
-    const { data } = supabase.storage
-      .from('user-avatars')
-      .getPublicUrl(filePath);
-
-    if (!data || !data.publicUrl) {
-      console.warn('Could not get public URL for avatar');
-      return null;
-    }
-
-    return `${data.publicUrl}?t=${new Date().getTime()}`;
-  };
-
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleUpdate = async () => {
-    if (formData.password && formData.password.length < 6) {
-      setAlertHeader('Validation Error');
-      setAlertMessage("New password must be at least 6 characters long.");
-      setShowAlert(true);
-      return;
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
+  };
 
-    if (formData.password && formData.password !== formData.confirmPassword) {
-      setAlertHeader('Validation Error');
-      setAlertMessage("New passwords don't match.");
-      setShowAlert(true);
-      return;
-    }
-
-    if (!formData.currentPassword) {
-      setAlertHeader('Verification Required');
-      setAlertMessage("Please enter your current password to save changes.");
-      setShowAlert(true);
-      return;
-    }
-
-    setIsUpdating(true);
-
+  const verifyPassword = async () => {
+    if (!user?.email) return;
+    
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user || !user.id || !user.email) {
-        throw new Error(authError?.message || 'User session invalid. Please log in again.');
-      }
-
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      setPasswordError(null);
+      const { error } = await supabase.auth.signInWithPassword({
         email: user.email,
-        password: formData.currentPassword,
+        password: password
       });
 
-      if (signInError) {
-        throw new Error('Incorrect current password.');
+      if (error) {
+        setPasswordError('Incorrect password. Please try again.');
+        return false;
       }
 
-      let newAvatarUrl: string | null | undefined = undefined;
+      setShowPasswordModal(false);
+      setPassword('');
+      return true;
+    } catch (err) {
+      console.error('Error verifying password:', err);
+      setPasswordError('An error occurred. Please try again.');
+      return false;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    // Show password verification modal
+    setShowPasswordModal(true);
+  };
+
+  const handleSaveChanges = async () => {
+    if (!user) return;
+
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+
+      let avatarUrl = formData.user_avatar_url;
+
       if (avatarFile) {
-        newAvatarUrl = await uploadAvatar(avatarFile, user.id);
-      }
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
 
-      const updates: { [key: string]: any } = {
-        username: formData.username,
-        user_firstname: formData.firstName,
-        user_lastname: formData.lastName,
-        updated_at: new Date().toISOString(),
-      };
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, avatarFile);
 
-      if (newAvatarUrl !== undefined) {
-        updates.user_avatar_url = newAvatarUrl;
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw uploadError;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+
+        avatarUrl = publicUrl;
       }
 
       const { error: updateError } = await supabase
         .from('users')
-        .update(updates)
+        .update({
+          email: formData.email,
+          username: formData.username,
+          user_firstname: formData.user_firstname,
+          user_lastname: formData.user_lastname,
+          user_avatar_url: avatarUrl,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', user.id);
 
       if (updateError) {
-        throw new Error(`Failed to update profile details: ${updateError.message}`);
+        console.error('Update error:', updateError);
+        throw updateError;
       }
 
-      if (formData.password) {
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: formData.password,
-        });
-
-        if (passwordError) {
-          throw new Error(`Failed to update password: ${passwordError.message}`);
-        }
-      }
-
-      setAlertHeader('Success');
-      setAlertMessage('Profile updated successfully!');
-      setShowAlert(true);
-
-      setFormData(prev => ({
-        ...prev,
-        currentPassword: '',
-        password: '',
-        confirmPassword: ''
-      }));
+      setSuccess('Profile updated successfully!');
       setAvatarFile(null);
-
-    } catch (error: any) {
-      console.error('Error during profile update:', error);
-      setAlertHeader('Update Error');
-      setAlertMessage(error.message || 'An unexpected error occurred.');
-      setShowAlert(true);
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      setError('Failed to update profile. Please try again.');
     } finally {
-      setIsUpdating(false);
+      setSaving(false);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <IonPage>
         <IonHeader>
           <IonToolbar>
             <IonButtons slot="start">
-              <IonBackButton defaultHref="/it35-lab/app" />
+              <IonMenuButton />
             </IonButtons>
-            <IonTitle>Edit Account</IonTitle>
+            <IonTitle>Profile Settings</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding ion-text-center" fullscreen>
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-            <IonSpinner name="crescent" style={{ transform: 'scale(1.5)', marginBottom: '20px' }} />
-            <p>Loading profile data...</p>
+        <IonContent className="ion-padding">
+          <div className="loading-container">
+            <IonSpinner name="crescent" />
+            <p>Loading profile...</p>
           </div>
         </IonContent>
       </IonPage>
     );
-  }
-
-  // Add a new component for when profile is not found
-  const ProfileNotFound = () => (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/it35-lab/app" />
-          </IonButtons>
-          <IonTitle>Profile Not Found</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent className="ion-padding">
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100%',
-          textAlign: 'center',
-          padding: '20px'
-        }}>
-          <IonText color="medium" style={{ marginBottom: '20px' }}>
-            <h2>Profile Not Found</h2>
-            <p>It seems your profile hasn't been set up yet. Would you like to set up your profile now?</p>
-          </IonText>
-          <IonButton
-            expand="block"
-            onClick={() => history.push('/it35-lab/app/profile-setup')}
-            style={{ maxWidth: '300px' }}
-          >
-            Set Up Profile
-          </IonButton>
-        </div>
-      </IonContent>
-    </IonPage>
-  );
-
-  // Show ProfileNotFound component if there's an error or no user data
-  if (showAlert && (alertHeader === 'Profile Error' || alertHeader === 'Loading Error')) {
-    return <ProfileNotFound />;
   }
 
   return (
@@ -324,182 +268,182 @@ const EditAccount: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/it35-lab/app" />
+            <IonMenuButton />
           </IonButtons>
-          <IonTitle>Edit Account</IonTitle>
+          <IonTitle>Profile Settings</IonTitle>
         </IonToolbar>
       </IonHeader>
-
       <IonContent className="ion-padding">
-        <IonGrid>
-          <IonRow className="ion-justify-content-center ion-align-items-center ion-margin-bottom">
-            <IonCol size="12" size-sm="8" size-md="6" className="ion-text-center">
-              <IonAvatar
-                style={{
-                  width: '120px',
-                  height: '120px',
-                  margin: '0 auto 15px auto',
-                  border: '3px solid var(--ion-color-light-shade, #f4f5f8)'
-                }}
-              >
-                {avatarPreview ? (
-                  <IonImg src={avatarPreview} alt="User Avatar" style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
-                ) : (
-                  <div style={{
-                    width: '100%', height: '100%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: 'var(--ion-color-light, #f4f5f8)', borderRadius: '50%'
-                  }}>
-                    <IonText color="medium" style={{ fontSize: '0.8em' }}>No Avatar</IonText>
-                  </div>
-                )}
-              </IonAvatar>
+        {error && (
+          <IonAlert
+            isOpen={!!error}
+            onDidDismiss={() => setError(null)}
+            header="Error"
+            message={error}
+            buttons={['OK']}
+          />
+        )}
 
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                accept="image/png, image/jpeg, image/gif, image/webp"
-                onChange={handleAvatarChange}
-              />
+        {success && (
+          <IonAlert
+            isOpen={!!success}
+            onDidDismiss={() => setSuccess(null)}
+            header="Success"
+            message={success}
+            buttons={['OK']}
+          />
+        )}
 
-              <IonButton
-                size="small"
-                fill="outline"
-                onClick={triggerFileInput}
-              >
-                {avatarPreview ? 'Change Avatar' : 'Upload Avatar'}
-              </IonButton>
-            </IonCol>
-          </IonRow>
-
-          <IonRow className="ion-justify-content-center">
-            <IonCol size="12" size-sm="10" size-md="8">
-              <IonItem lines="none" style={{ marginBottom: '15px' }}>
-                <IonLabel position="stacked" color="medium">Email</IonLabel>
-                <IonInput
-                  type="email"
-                  value={currentEmail}
-                  readonly={true}
-                  style={{ color: 'var(--ion-color-medium)', '--padding-top': '8px' }}
+        <form onSubmit={handleSubmit} className="profile-form">
+          <IonCard className="profile-card">
+            <IonCardContent>
+              <div className="avatar-section">
+                <IonAvatar className="profile-avatar">
+                  {avatarPreview ? (
+                    <IonImg src={avatarPreview} alt="Profile" />
+                  ) : (
+                    <div className="avatar-placeholder">
+                      <IonIcon icon={personOutline} />
+                    </div>
+                  )}
+                </IonAvatar>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  style={{ display: 'none' }}
+                  id="avatar-upload"
                 />
-              </IonItem>
+                <label htmlFor="avatar-upload" className="avatar-upload-label">
+                  <IonIcon icon={cameraOutline} />
+                  Change Photo
+                </label>
+              </div>
 
-              <IonItem lines="none" style={{ marginBottom: '15px' }}>
-                <IonLabel position="stacked" color="medium">Username</IonLabel>
-                <IonInput
-                  type="text"
-                  placeholder="Enter username"
-                  value={formData.username}
-                  onIonChange={(e) => handleInputChange('username', e.detail.value!)}
-                />
-              </IonItem>
-            </IonCol>
-          </IonRow>
+              <IonGrid>
+                <IonRow>
+                  <IonCol size="12" sizeMd="6">
+                    <IonItem className="custom-input">
+                      <IonLabel position="stacked">
+                        <IonIcon icon={personOutline} />
+                        Username
+                      </IonLabel>
+                      <IonInput
+                        value={formData.username}
+                        onIonChange={e => handleInputChange('username', e.detail.value!)}
+                        required
+                      />
+                    </IonItem>
+                  </IonCol>
+                  <IonCol size="12" sizeMd="6">
+                    <IonItem className="custom-input">
+                      <IonLabel position="stacked">
+                        <IonIcon icon={mailOutline} />
+                        Email
+                      </IonLabel>
+                      <IonInput
+                        type="email"
+                        value={formData.email}
+                        onIonChange={e => handleInputChange('email', e.detail.value!)}
+                        required
+                      />
+                    </IonItem>
+                  </IonCol>
+                </IonRow>
+                <IonRow>
+                  <IonCol size="12" sizeMd="6">
+                    <IonItem className="custom-input">
+                      <IonLabel position="stacked">
+                        <IonIcon icon={personOutline} />
+                        First Name
+                      </IonLabel>
+                      <IonInput
+                        value={formData.user_firstname}
+                        onIonChange={e => handleInputChange('user_firstname', e.detail.value!)}
+                      />
+                    </IonItem>
+                  </IonCol>
+                  <IonCol size="12" sizeMd="6">
+                    <IonItem className="custom-input">
+                      <IonLabel position="stacked">
+                        <IonIcon icon={personOutline} />
+                        Last Name
+                      </IonLabel>
+                      <IonInput
+                        value={formData.user_lastname}
+                        onIonChange={e => handleInputChange('user_lastname', e.detail.value!)}
+                      />
+                    </IonItem>
+                  </IonCol>
+                </IonRow>
+              </IonGrid>
 
-          <IonRow className="ion-justify-content-center">
-            <IonCol size="12" size-sm="5" size-md="4">
-              <IonItem lines="none" style={{ marginBottom: '15px' }}>
-                <IonLabel position="stacked" color="medium">First Name</IonLabel>
-                <IonInput
-                  type="text"
-                  placeholder="Enter first name"
-                  value={formData.firstName}
-                  onIonChange={(e) => handleInputChange('firstName', e.detail.value!)}
-                />
-              </IonItem>
-            </IonCol>
-            <IonCol size="12" size-sm="5" size-md="4">
-              <IonItem lines="none" style={{ marginBottom: '15px' }}>
-                <IonLabel position="stacked" color="medium">Last Name</IonLabel>
-                <IonInput
-                  type="text"
-                  placeholder="Enter last name"
-                  value={formData.lastName}
-                  onIonChange={(e) => handleInputChange('lastName', e.detail.value!)}
-                />
-              </IonItem>
-            </IonCol>
-          </IonRow>
-
-          <IonRow className="ion-justify-content-center">
-            <IonCol size="12" size-sm="10" size-md="8">
-              <IonText color="dark">
-                <h3 style={{ marginBottom: '15px', fontSize: '1.1em', fontWeight: '600' }}>Change Password (Optional)</h3>
-              </IonText>
-
-              <IonItem lines="none" style={{ marginBottom: '15px' }}>
-                <IonLabel position="stacked" color="medium">New Password</IonLabel>
-                <IonInput
-                  type="password"
-                  placeholder="Leave blank to keep current password"
-                  value={formData.password}
-                  onIonChange={(e) => handleInputChange('password', e.detail.value!)}
+              <div className="save-button-container">
+                <IonButton
+                  expand="block"
+                  type="submit"
+                  disabled={saving}
+                  className="save-button"
                 >
-                  <IonInputPasswordToggle slot="end" />
-                </IonInput>
-              </IonItem>
+                  <IonIcon icon={saveOutline} slot="start" />
+                  {saving ? <IonSpinner name="crescent" /> : 'Save Changes'}
+                </IonButton>
+              </div>
+            </IonCardContent>
+          </IonCard>
+        </form>
 
-              <IonItem lines="none" style={{ marginBottom: '15px' }}>
-                <IonLabel position="stacked" color="medium">Confirm New Password</IonLabel>
+        {/* Password Verification Modal */}
+        <IonModal isOpen={showPasswordModal} onDidDismiss={() => setShowPasswordModal(false)}>
+          <IonContent className="ion-padding">
+            <div className="password-modal-content">
+              <IonIcon icon={lockClosedOutline} className="password-icon" />
+              <h2>Verify Your Password</h2>
+              <p>Please enter your password to save changes</p>
+              
+              <IonItem className="custom-input">
+                <IonLabel position="stacked">
+                  <IonIcon icon={lockClosedOutline} />
+                  Password
+                </IonLabel>
                 <IonInput
                   type="password"
-                  placeholder="Confirm new password"
-                  value={formData.confirmPassword}
-                  onIonChange={(e) => handleInputChange('confirmPassword', e.detail.value!)}
-                  disabled={!formData.password}
-                >
-                  <IonInputPasswordToggle slot="end" />
-                </IonInput>
-              </IonItem>
-            </IonCol>
-          </IonRow>
-
-          <IonRow className="ion-justify-content-center">
-            <IonCol size="12" size-sm="10" size-md="8">
-              <IonText color="dark">
-                <h3 style={{ marginBottom: '15px', fontSize: '1.1em', fontWeight: '600' }}>Verify Changes</h3>
-              </IonText>
-              <IonItem lines="none" style={{ marginBottom: '25px' }}>
-                <IonLabel position="stacked" color="medium">Current Password *</IonLabel>
-                <IonInput
-                  type="password"
-                  placeholder="Enter current password to save"
-                  value={formData.currentPassword}
-                  onIonChange={(e) => handleInputChange('currentPassword', e.detail.value!)}
+                  value={password}
+                  onIonChange={e => setPassword(e.detail.value!)}
                   required
-                >
-                  <IonInputPasswordToggle slot="end" />
-                </IonInput>
-                <IonText color="medium" style={{fontSize: '0.8em', marginTop: '5px'}}>* Required to save any changes</IonText>
+                />
               </IonItem>
-            </IonCol>
-          </IonRow>
 
-          <IonRow className="ion-justify-content-center">
-            <IonCol size="12" size-sm="10" size-md="8">
-              <IonButton
-                expand="block"
-                onClick={handleUpdate}
-                disabled={isUpdating || !formData.currentPassword}
-                style={{ '--border-radius': '8px' }}
-              >
-                {isUpdating ? <IonSpinner name="dots" /> : 'Update Account'}
-              </IonButton>
-            </IonCol>
-          </IonRow>
-        </IonGrid>
+              {passwordError && (
+                <IonText color="danger" className="password-error">
+                  {passwordError}
+                </IonText>
+              )}
+
+              <div className="password-modal-buttons">
+                <IonButton
+                  fill="outline"
+                  onClick={() => setShowPasswordModal(false)}
+                >
+                  Cancel
+                </IonButton>
+                <IonButton
+                  onClick={async () => {
+                    const verified = await verifyPassword();
+                    if (verified) {
+                      handleSaveChanges();
+                    }
+                  }}
+                >
+                  Verify & Save
+                </IonButton>
+              </div>
+            </div>
+          </IonContent>
+        </IonModal>
       </IonContent>
-
-      <IonAlert
-        isOpen={showAlert}
-        onDidDismiss={() => setShowAlert(false)}
-        header={alertHeader}
-        message={alertMessage}
-        buttons={['OK']}
-      />
     </IonPage>
   );
 };
 
-export default EditAccount;
+export default EditProfilePage;
