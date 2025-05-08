@@ -16,6 +16,7 @@ import {
 import { logoIonic } from 'ionicons/icons';
 import { useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { useHistory } from 'react-router-dom';
 
 const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
   return (
@@ -30,7 +31,7 @@ const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void
 };
 
 const Login: React.FC = () => {
-  const navigation = useIonRouter();
+  const history = useHistory();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
@@ -40,18 +41,23 @@ const Login: React.FC = () => {
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
   const doLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      setAlertMessage(error.message);
+      if (error) {
+        setAlertMessage(error.message);
+        setShowAlert(true);
+        return;
+      }
+
+      setShowToast(true); 
+      setTimeout(() => {
+        history.push('/it35-lab/app/home');
+      }, 300);
+    } catch (err) {
+      setAlertMessage('An error occurred during login');
       setShowAlert(true);
-      return;
     }
-
-    setShowToast(true); 
-    setTimeout(() => {
-      navigation.push('/it35-lab/app/home', 'forward', 'replace');
-    }, 300);
   };
   
   return (

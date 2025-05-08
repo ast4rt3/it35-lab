@@ -195,26 +195,62 @@ const EditProfilePage: React.FC = () => {
       let avatarUrl = formData.user_avatar_url;
 
       if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `avatars/${fileName}`;
+        try {
+          // Validate file size (max 5MB)
+          if (avatarFile.size > 5 * 1024 * 1024) {
+            throw new Error('File size must be less than 5MB');
+          }
 
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(filePath, avatarFile);
+          // Validate file type
+          const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+          if (!allowedTypes.includes(avatarFile.type)) {
+            throw new Error('Only JPEG, PNG and GIF images are allowed');
+          }
 
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          throw uploadError;
+          const fileExt = avatarFile.name.split('.').pop();
+          const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+          const filePath = `public/${fileName}`; // Add public folder to path
+
+          console.log('Attempting to upload file:', {
+            bucket: 'user-avatars',
+            path: filePath,
+            fileType: avatarFile.type,
+            fileSize: avatarFile.size
+          });
+
+          // Upload file
+          const { error: uploadError, data } = await supabase.storage
+            .from('user-avatars')
+            .upload(filePath, avatarFile, {
+              cacheControl: '3600',
+              upsert: true
+            });
+
+          if (uploadError) {
+            console.error('Upload error details:', {
+              error: uploadError,
+              message: uploadError.message,
+              name: uploadError.name
+            });
+            throw new Error(uploadError.message || 'Failed to upload avatar');
+          }
+
+          console.log('File uploaded successfully:', data);
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('user-avatars')
+            .getPublicUrl(filePath);
+
+          console.log('Generated public URL:', publicUrl);
+          avatarUrl = publicUrl;
+        } catch (uploadErr) {
+          console.error('Avatar upload error:', uploadErr);
+          throw new Error(uploadErr instanceof Error ? uploadErr.message : 'Failed to upload avatar');
         }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(filePath);
-
-        avatarUrl = publicUrl;
       }
 
+      // Update user profile
       const { error: updateError } = await supabase
         .from('users')
         .update({
@@ -236,7 +272,7 @@ const EditProfilePage: React.FC = () => {
       setAvatarFile(null);
     } catch (err) {
       console.error('Error updating profile:', err);
-      setError('Failed to update profile. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to update profile. Please try again.');
     } finally {
       setSaving(false);
     }
