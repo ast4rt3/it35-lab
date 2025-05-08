@@ -1,4 +1,4 @@
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import {
   IonApp,
   IonRouterOutlet,
@@ -47,14 +47,17 @@ const App: React.FC = () => (
   <IonApp>
     <AuthProvider>
       <IonReactRouter>
-        <IonRouterOutlet>
+        <Switch>
           <Route exact path="/it35-lab" component={Login} />
           <Route exact path="/it35-lab/register" component={Register} />
           <ProtectedRoute path="/it35-lab/app" component={Menu} />
           <Route exact path="/">
             <Redirect to="/it35-lab" />
           </Route>
-        </IonRouterOutlet>
+          <Route path="*">
+            <Redirect to="/it35-lab" />
+          </Route>
+        </Switch>
       </IonReactRouter>
     </AuthProvider>
   </IonApp>

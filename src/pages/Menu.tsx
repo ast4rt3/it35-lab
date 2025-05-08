@@ -8,10 +8,11 @@ import {
     IonMenu, 
     IonMenuToggle, 
     IonPage, 
-    IonRouterOutlet, 
+    IonRouterOutlet,
     IonSplitPane, 
     IonTitle, 
     IonToolbar,
+    IonSpinner,
     useIonRouter
   } from '@ionic/react';
   import {
@@ -30,43 +31,17 @@ import {
   import IncidentAndReport from './IncidentAndReport';
   import AlertAndNotification from './AlertAndNotification';
   import EventMonitoring from './EventMonitoring';
-  import { supabase } from '../utils/supabaseClient';
-  import { useEffect, useState } from 'react';
+  import { useAuth } from '../contexts/AuthContext';
   import EditProfilePage from './EditProfilePage';
   
   const Menu: React.FC = () => {
+    const { user, session, loading, signOut } = useAuth();
     const router = useIonRouter();
-    const [user, setUser] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
   
-    useEffect(() => {
-      // Check if user is authenticated
-      const checkAuth = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-        setLoading(false);
-        
-        if (!user) {
-          router.push('/it35-lab', 'forward', 'replace');
-        }
-      };
-  
-      checkAuth();
-  
-      // Listen for auth state changes
-      const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN') {
-          setUser(session?.user ?? null);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          router.push('/it35-lab', 'forward', 'replace');
-        }
-      });
-  
-      return () => {
-        authListener.subscription.unsubscribe();
-      };
-    }, [router]);
+    const handleSignOut = async () => {
+      await signOut();
+      router.push('/it35-lab', 'root', 'replace');
+    };
   
     const path = [
       {name:'Home', url: '/it35-lab/app/home', icon: homeOutline},
@@ -77,28 +52,24 @@ import {
       {name:'Profile', url: '/it35-lab/app/profile', icon: settingsOutline}
     ];
   
-    const handleLogout = async () => {
-      try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-      } catch (error) {
-        console.error('Error logging out:', error);
-      }
-    };
-  
     if (loading) {
       return (
         <IonPage>
           <IonContent>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-              <p>Loading...</p>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              height: '100%' 
+            }}>
+              <IonSpinner name="crescent" />
             </div>
           </IonContent>
         </IonPage>
       );
     }
   
-    if (!user) {
+    if (!user || !session) {
       return <Redirect to="/it35-lab" />;
     }
   
@@ -132,7 +103,7 @@ import {
                 ))}
   
                 <IonButton 
-                  onClick={handleLogout} 
+                  onClick={handleSignOut} 
                   expand="full" 
                   style={{ marginTop: '10px' }}
                 >
@@ -141,21 +112,19 @@ import {
                 </IonButton>
               </IonContent>
             </IonMenu>
+            
             <IonRouterOutlet id="main">
               <Route exact path="/it35-lab/app/home" component={Home} />
-              <Route exact path="/it35-lab/app/logs" component={Logs} />
+              <Route exact path="/it35-lab/app/Logs" component={Logs} />
               <Route exact path="/it35-lab/app/IncidentAndReport" component={IncidentAndReport} />
               <Route exact path="/it35-lab/app/AlertAndNotification" component={AlertAndNotification} />
               <Route exact path="/it35-lab/app/EventMonitoring" component={EventMonitoring} />
               <Route exact path="/it35-lab/app/profile" component={EditProfilePage} />
-              <Route exact path="/it35-lab/app">
-                <Redirect to="/it35-lab/app/home" />
-              </Route>
             </IonRouterOutlet>
           </IonSplitPane>
         </IonPage>
       </>
     );
-  }
+  };
   
   export default Menu;

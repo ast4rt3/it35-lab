@@ -11,7 +11,7 @@ import {
   IonPage,  
   IonToast,  
   IonRouterLink,
-  useIonRouter
+  IonSpinner
 } from '@ionic/react';
 import { logoIonic } from 'ionicons/icons';
 import { useState } from 'react';
@@ -39,10 +39,18 @@ const Login: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const doLogin = async () => {
+    if (!email || !password) {
+      setAlertMessage('Please enter both email and password');
+      setShowAlert(true);
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      setIsLoggingIn(true);
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
         setAlertMessage(error.message);
@@ -50,15 +58,35 @@ const Login: React.FC = () => {
         return;
       }
 
-      setShowToast(true); 
-      setTimeout(() => {
-        history.push('/it35-lab/app/home');
-      }, 300);
+      if (data.session) {
+        setShowToast(true);
+        // Use window.location for a hard redirect
+        window.location.href = '/it35-lab/app/home';
+      }
     } catch (err) {
       setAlertMessage('An error occurred during login');
       setShowAlert(true);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
+
+  if (isLoggingIn) {
+    return (
+      <IonPage>
+        <IonContent>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '100%' 
+          }}>
+            <IonSpinner />
+          </div>
+        </IonContent>
+      </IonPage>
+    );
+  }
   
   return (
     <IonPage>
