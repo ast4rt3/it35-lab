@@ -486,20 +486,33 @@ ion-card-content ion-text {
 
 /* Modal Styles */
 .post-modal {
-  --height: auto;
-  --max-height: 80vh;
+  --height: 80vh;
+  --width: 90%;
+  --max-width: 600px;
   --border-radius: 16px;
   --background: var(--ion-background-color);
-  --width: 100%;
-  --max-width: 500px;
-  --margin: auto;
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-.modal-content {
-  padding: 16px;
-  height: 100%;
+.post-modal::part(content) {
+  background: var(--ion-background-color);
+  padding: 0;
   display: flex;
   flex-direction: column;
+}
+
+.post-modal ion-content {
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+}
+
+.post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 400px;
+  padding: 16px;
+  background: var(--ion-background-color);
 }
 
 .post-textarea {
@@ -509,17 +522,25 @@ ion-card-content ion-text {
   --padding-top: 12px;
   --padding-bottom: 12px;
   --color: var(--ion-text-color);
-  border-radius: 8px;
-  margin-bottom: 12px;
+  border-radius: 12px;
   width: 100%;
-  flex: 1;
+  min-height: 150px;
+  background: var(--ion-item-background);
+  border: 1px solid var(--ion-color-light);
+}
+
+.post-textarea::part(native) {
+  padding: 12px;
 }
 
 .image-upload-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin: 16px 0;
+  padding: 16px;
+  background: var(--ion-item-background);
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-light);
 }
 
 .image-upload-label {
@@ -549,16 +570,17 @@ ion-card-content ion-text {
 .image-preview {
   position: relative;
   width: 100%;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--ion-item-background);
+  border: 1px solid var(--ion-color-light);
 }
 
 .image-preview img {
   width: 100%;
   max-height: 300px;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .remove-image-button {
@@ -577,7 +599,11 @@ ion-card-content ion-text {
 .modal-actions {
   display: flex;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: auto;
+  padding: 16px;
+  background: var(--ion-item-background);
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-light);
 }
 
 .submit-button {

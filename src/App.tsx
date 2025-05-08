@@ -6,6 +6,7 @@ import {
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -49,7 +50,7 @@ const App: React.FC = () => (
         <IonRouterOutlet>
           <Route exact path="/it35-lab" component={Login} />
           <Route exact path="/it35-lab/register" component={Register} />
-          <Route path="/it35-lab/app" component={Menu} />
+          <ProtectedRoute path="/it35-lab/app" component={Menu} />
           <Route exact path="/">
             <Redirect to="/it35-lab" />
           </Route>
