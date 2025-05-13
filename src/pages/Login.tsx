@@ -11,11 +11,12 @@ import {
   IonPage,  
   IonToast,  
   IonRouterLink,
-  useIonRouter
+  IonSpinner
 } from '@ionic/react';
 import { logoIonic } from 'ionicons/icons';
 import { useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { useHistory } from 'react-router-dom';
 
 const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
   return (
@@ -30,7 +31,7 @@ const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void
 };
 
 const Login: React.FC = () => {
-  const navigation = useIonRouter();
+  const history = useHistory();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
@@ -38,40 +39,91 @@ const Login: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const doLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      setAlertMessage(error.message);
+    if (!email || !password) {
+      setAlertMessage('Please enter both email and password');
       setShowAlert(true);
       return;
     }
 
-    setShowToast(true); 
-    setTimeout(() => {
-      navigation.push('/it35-lab/app/home', 'forward', 'replace');
-    }, 300);
+    try {
+      setIsLoggingIn(true);
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        setAlertMessage(error.message);
+        setShowAlert(true);
+        return;
+      }
+
+      if (data.session) {
+        setShowToast(true);
+        // Use window.location for a hard redirect
+        window.location.href = '/it35-lab/app/home';
+      }
+    } catch (err) {
+      setAlertMessage('An error occurred during login');
+      setShowAlert(true);
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
+
+  if (isLoggingIn) {
+    return (
+      <IonPage>
+        <IonContent>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '100%' 
+          }}>
+            <IonSpinner />
+          </div>
+        </IonContent>
+      </IonPage>
+    );
+  }
   
   return (
     <IonPage>
       <IonContent className="ion-padding" fullscreen style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
+        <div style={{ 
+          display: 'flex', 
+          width: '100%', 
+          height: '100%', 
+          overflow: 'hidden',
+          flexDirection: window.innerWidth <= 768 ? 'column' : 'row' 
+        }}>
           {/* Left Side */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <div style={{ 
+            flex: 1, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '100%',
+            padding: window.innerWidth <= 768 ? '20px' : '0'
+          }}>
             <h1 style={{
-              position: 'absolute',
-              top: '15%',
-              left: '15%',
-              transform: 'translate(-50%, -50%)',
-              fontSize: '3rem',
+              position: window.innerWidth <= 768 ? 'relative' : 'absolute',
+              top: window.innerWidth <= 768 ? 'auto' : '15%',
+              left: window.innerWidth <= 768 ? 'auto' : '15%',
+              transform: window.innerWidth <= 768 ? 'none' : 'translate(-50%, -50%)',
+              fontSize: window.innerWidth <= 768 ? '1.8rem' : '3rem',
               fontWeight: 'bold',
+              marginBottom: window.innerWidth <= 768 ? '20px' : '0',
+              textAlign: window.innerWidth <= 768 ? 'center' : 'left',
+              width: window.innerWidth <= 768 ? '100%' : 'auto',
+              padding: window.innerWidth <= 768 ? '0 20px' : '0'
             }}>
               Welcome Back
             </h1>
 
-            <div style={{ width: '80%', marginBottom: '30px' }}>
+            <div style={{ width: window.innerWidth <= 768 ? '100%' : '80%', marginBottom: '30px' }}>
               <div 
                 style={{ 
                   position: 'relative',
@@ -109,7 +161,7 @@ const Login: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ width: '80%', marginBottom: '30px' }}>
+            <div style={{ width: window.innerWidth <= 768 ? '100%' : '80%', marginBottom: '30px' }}>
               <div 
                 style={{ 
                   position: 'relative',
@@ -152,7 +204,7 @@ const Login: React.FC = () => {
               expand="full" 
               style={{ 
                 marginTop: '20px', 
-                width: '80%',
+                width: window.innerWidth <= 768 ? '100%' : '80%',
                 '--border-radius': '25px',
                 '--padding-top': '20px',
                 '--padding-bottom': '20px',
@@ -182,11 +234,30 @@ const Login: React.FC = () => {
           </div>
 
           {/* Border Line */}
-          <div style={{ width: '2px', backgroundColor: 'white', height: '80%', alignSelf: 'center', opacity: 0.3, boxShadow: 'rgba(14, 63, 126, 0.04) 0px 0px 0px 1px, rgba(42, 51, 69, 0.04) 0px 1px 1px -0.5px, rgba(42, 51, 70, 0.04) 0px 3px 3px -1.5px, rgba(42, 51, 70, 0.04) 0px 6px 6px -3px, rgba(14, 63, 126, 0.04) 0px 12px 12px -6px, rgba(14, 63, 126, 0.04) 0px 24px 24px -12px' }}></div>
+          <div style={{ 
+            width: window.innerWidth <= 768 ? '100%' : '2px', 
+            height: window.innerWidth <= 768 ? '2px' : '80%', 
+            backgroundColor: 'white', 
+            alignSelf: 'center', 
+            opacity: 0.3, 
+            boxShadow: 'rgba(14, 63, 126, 0.04) 0px 0px 0px 1px, rgba(42, 51, 69, 0.04) 0px 1px 1px -0.5px, rgba(42, 51, 70, 0.04) 0px 3px 3px -1.5px, rgba(42, 51, 70, 0.04) 0px 6px 6px -3px, rgba(14, 63, 126, 0.04) 0px 12px 12px -6px, rgba(14, 63, 126, 0.04) 0px 24px 24px -12px',
+            margin: window.innerWidth <= 768 ? '20px 0' : '0'
+          }}></div>
 
           {/* Right Side (Logo) */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a1b26', height: '100%' }}>
-            <IonAvatar style={{ width: '200px', height: '200px' }}>
+          <div style={{ 
+            flex: 1, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            backgroundColor: '#1a1b26', 
+            height: window.innerWidth <= 768 ? 'auto' : '100%',
+            padding: window.innerWidth <= 768 ? '40px 0' : '0'
+          }}>
+            <IonAvatar style={{ 
+              width: window.innerWidth <= 768 ? '150px' : '200px', 
+              height: window.innerWidth <= 768 ? '150px' : '200px' 
+            }}>
               <img src="https://i.pinimg.com/736x/aa/ec/16/aaec16b6c7fcd29d1d42d950265c5447.jpg" alt="dark blue logo" />
             </IonAvatar>
           </div>

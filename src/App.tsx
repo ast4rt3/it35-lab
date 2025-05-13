@@ -1,7 +1,12 @@
-import { Redirect, Route } from 'react-router-dom';
-import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
+import { Redirect, Route, Switch } from 'react-router-dom';
+import {
+  IonApp,
+  IonRouterOutlet,
+  setupIonicReact
+} from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -33,31 +38,28 @@ import '@ionic/react/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 import Login from './pages/Login';
-import Menu from './pages/Menu';
 import Register from './pages/Register';
-import AuthGuard from './components/AuthGuard';
+import Menu from './pages/Menu';
 
 setupIonicReact();
 
 const App: React.FC = () => (
   <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/it35-lab" component={Login} />
-        <Route exact path="/it35-lab/register" component={Register} />
-        <Route path="/it35-lab/app" component={Menu} />
-        <AuthGuard>
-          <>
-            <Route path="/it35-lab/app/home" component={Menu} />
-            <Route path="/it35-lab/app/home/feed" component={Menu} />
-            <Route path="/it35-lab/app/Logs" component={Menu} />
-            <Route path="/it35-lab/app/IncidentAndReport" component={Menu} />
-            <Route path="/it35-lab/app/AlertAndNotification" component={Menu} />
-            <Route path="/it35-lab/app/EventMonitoring" component={Menu} />
-          </>
-        </AuthGuard>
-      </IonRouterOutlet>
-    </IonReactRouter>
+    <AuthProvider>
+      <IonReactRouter>
+        <Switch>
+          <Route exact path="/it35-lab" component={Login} />
+          <Route exact path="/it35-lab/register" component={Register} />
+          <ProtectedRoute path="/it35-lab/app" component={Menu} />
+          <Route exact path="/">
+            <Redirect to="/it35-lab" />
+          </Route>
+          <Route path="*">
+            <Redirect to="/it35-lab" />
+          </Route>
+        </Switch>
+      </IonReactRouter>
+    </AuthProvider>
   </IonApp>
 );
 
