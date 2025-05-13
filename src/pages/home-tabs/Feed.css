@@ -455,10 +455,12 @@ ion-card-content ion-text {
   height: 32px;
   min-width: auto;
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .action-button ion-icon {
-  margin-right: 4px;
   font-size: 1.1rem;
 }
 
@@ -696,4 +698,147 @@ ion-card-content ion-text {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Comments Styles */
+.comments-container {
+  padding: 16px;
+  background: var(--ion-background-color);
+}
+
+.comment {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--ion-item-background);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  border: 1px solid var(--ion-color-light);
+}
+
+.comment-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-username {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--ion-text-color);
+}
+
+.comment-time {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}
+
+.comment-content {
+  margin: 8px 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ion-text-color);
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.comment-replies {
+  margin-top: 8px;
+  margin-left: 16px;
+  border-left: 2px solid var(--ion-color-light);
+  padding-left: 12px;
+}
+
+.comment-input-container {
+  position: sticky;
+  bottom: 0;
+  background-color: var(--ion-background-color);
+  padding: 16px;
+  border-top: 1px solid var(--ion-color-light);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.replying-to {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: var(--ion-item-background);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: var(--ion-text-color);
+  border: 1px solid var(--ion-color-light);
+}
+
+.comment-input {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.comment-textarea {
+  flex: 1;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  border-radius: 20px;
+  background-color: var(--ion-item-background);
+  margin: 0;
+  border: 1px solid var(--ion-color-light);
+}
+
+/* Adjust modal styles for comments */
+ion-modal.comments-modal {
+  --height: 80%;
+  --border-radius: 16px 16px 0 0;
+}
+
+ion-modal.comments-modal::part(content) {
+  border-radius: 16px 16px 0 0;
+  background: var(--ion-background-color);
+}
+
+.comments-content {
+  --background: var(--ion-background-color);
+}
+
+/* Action button styles */
+.action-button {
+  --background: transparent;
+  --background-hover: var(--ion-color-light);
+  --color: var(--ion-color-medium);
+  --color-hover: var(--ion-color-primary);
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  --box-shadow: none;
+  margin: 0;
+  font-size: 0.85rem;
+  height: 32px;
+  min-width: auto;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.action-button ion-icon {
+  font-size: 1.1rem;
 } 

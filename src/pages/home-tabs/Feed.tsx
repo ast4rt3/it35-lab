@@ -41,12 +41,32 @@ import {
   heart,
   chatbubbleOutline,
   shareOutline,
-  peopleOutline
+  peopleOutline,
+  sendOutline,
+  arrowUndoOutline
 } from 'ionicons/icons';
 import { supabase } from '../../utils/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import { useHistory } from 'react-router-dom';
 import './Feed.css';
+
+interface LikedUser {
+  user_id: string;
+  username: string;
+  user_avatar_url?: string | null;
+}
+
+interface Comment {
+  id: string;
+  user_id: string;
+  username: string;
+  user_avatar_url: string | null;
+  parent_comment_id: string | null;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  replies?: Comment[];
+}
 
 interface Post {
   post_id: string;
@@ -61,14 +81,13 @@ interface Post {
     user_avatar_url: string | null;
   };
   like_count: number;
+  comment_count: number;
   liked_by_user: boolean;
-  liked_by?: Array<{
-    user_id: string;
-    username: string;
-  }>;
+  liked_by?: LikedUser[];
   likes?: Array<{
     user_id: string;
   }>;
+  comments?: Comment[];
 }
 
 interface PostData {
@@ -93,7 +112,12 @@ const Feed: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [showLikedByModal, setShowLikedByModal] = useState(false);
-  const [selectedPostLikes, setSelectedPostLikes] = useState<Array<{ user_id: string; username: string }>>([]);
+  const [selectedPostLikes, setSelectedPostLikes] = useState<LikedUser[]>([]);
+  const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [selectedPostComments, setSelectedPostComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const { user } = useAuth();
   const history = useHistory();
 
@@ -177,10 +201,13 @@ const Feed: React.FC = () => {
         return;
       }
 
-      // Process posts to include like information
+      // Process posts to include like and comment information
       const processedPosts = await Promise.all(postsData.map(async (post) => {
         const { data: likeCount } = await supabase
           .rpc('get_post_like_count', { post_id: post.post_id });
+
+        const { data: commentCount } = await supabase
+          .rpc('get_post_comment_count', { post_id: post.post_id });
 
         const { data: likedBy } = await supabase
           .rpc('get_post_liked_users', { post_id: post.post_id });
@@ -190,6 +217,7 @@ const Feed: React.FC = () => {
         return {
           ...post,
           like_count: likeCount || 0,
+          comment_count: commentCount || 0,
           liked_by_user: isLikedByUser || false,
           liked_by: likedBy || []
         };
@@ -391,7 +419,23 @@ const Feed: React.FC = () => {
       const { data: likedBy } = await supabase
         .rpc('get_post_liked_users', { post_id: postId });
 
-      setSelectedPostLikes(likedBy || []);
+      // Fetch user avatars for each user who liked the post
+      const likedByWithAvatars = await Promise.all(
+        (likedBy || []).map(async (user: LikedUser) => {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('user_avatar_url')
+            .eq('id', user.user_id)
+            .single();
+          
+          return {
+            ...user,
+            user_avatar_url: userData?.user_avatar_url
+          };
+        })
+      );
+
+      setSelectedPostLikes(likedByWithAvatars);
       setShowLikedByModal(true);
     } catch (err) {
       console.error('Error fetching liked by:', err);
@@ -415,6 +459,136 @@ const Feed: React.FC = () => {
       }
     }, 100);
   };
+
+  const fetchComments = async (postId: string) => {
+    try {
+      const { data: comments, error } = await supabase
+        .rpc('get_post_comments', { post_id: postId });
+
+      if (error) throw error;
+
+      // Organize comments into a threaded structure
+      const commentMap = new Map<string, Comment>();
+      const rootComments: Comment[] = [];
+
+      // First pass: create map of all comments
+      comments.forEach((comment: Comment) => {
+        commentMap.set(comment.id, { ...comment, replies: [] });
+      });
+
+      // Second pass: organize into threaded structure
+      comments.forEach((comment: Comment) => {
+        const commentWithReplies = commentMap.get(comment.id)!;
+        if (comment.parent_comment_id) {
+          const parentComment = commentMap.get(comment.parent_comment_id);
+          if (parentComment) {
+            parentComment.replies = parentComment.replies || [];
+            parentComment.replies.push(commentWithReplies);
+          }
+        } else {
+          rootComments.push(commentWithReplies);
+        }
+      });
+
+      setSelectedPostComments(rootComments);
+    } catch (err) {
+      console.error('Error fetching comments:', err);
+      setError('Failed to load comments. Please try again.');
+    }
+  };
+
+  const handleShowComments = async (postId: string) => {
+    setSelectedPostId(postId);
+    setShowCommentsModal(true);
+    await fetchComments(postId);
+  };
+
+  const handleAddComment = async () => {
+    if (!user || !selectedPostId || !newComment.trim()) return;
+
+    try {
+      const commentData = {
+        post_id: selectedPostId,
+        user_id: user.id,
+        content: newComment.trim(),
+        parent_comment_id: replyingTo?.id || null
+      };
+
+      const { error } = await supabase
+        .from('comments')
+        .insert([commentData]);
+
+      if (error) throw error;
+
+      // Refresh comments
+      await fetchComments(selectedPostId);
+
+      // Update post comment count
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.post_id === selectedPostId) {
+          return {
+            ...post,
+            comment_count: (post.comment_count || 0) + 1
+          };
+        }
+        return post;
+      }));
+
+      // Reset form
+      setNewComment('');
+      setReplyingTo(null);
+    } catch (err) {
+      console.error('Error adding comment:', err);
+      setError('Failed to add comment. Please try again.');
+    }
+  };
+
+  const handleReply = (comment: Comment) => {
+    setReplyingTo(comment);
+    // Focus the comment input
+    setTimeout(() => {
+      const textarea = document.querySelector('.comment-textarea') as HTMLIonTextareaElement;
+      if (textarea) {
+        textarea.setFocus();
+      }
+    }, 100);
+  };
+
+  const renderComment = (comment: Comment, depth: number = 0) => (
+    <div key={comment.id} className="comment" style={{ marginLeft: `${depth * 20}px` }}>
+      <div className="comment-header">
+        <IonAvatar className="comment-avatar">
+          {comment.user_avatar_url ? (
+            <img src={comment.user_avatar_url} alt={`${comment.username}'s avatar`} />
+          ) : (
+            <IonIcon icon={personOutline} />
+          )}
+        </IonAvatar>
+        <div className="comment-info">
+          <span className="comment-username">{comment.username}</span>
+          <span className="comment-time">{formatDate(comment.created_at)}</span>
+        </div>
+      </div>
+      <div className="comment-content">
+        <p>{comment.content}</p>
+      </div>
+      <div className="comment-actions">
+        <IonButton
+          fill="clear"
+          size="small"
+          onClick={() => handleReply(comment)}
+        >
+          <IonIcon icon={arrowUndoOutline} slot="start" />
+          Reply
+        </IonButton>
+      </div>
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="comment-replies">
+          {comment.replies.map(reply => renderComment(reply, depth + 1))}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <IonPage>
@@ -512,9 +686,13 @@ const Feed: React.FC = () => {
                           Liked by
                         </IonButton>
                       )}
-                      <IonButton fill="clear" className="action-button">
+                      <IonButton
+                        fill="clear"
+                        className="action-button"
+                        onClick={() => handleShowComments(post.post_id)}
+                      >
                         <IonIcon icon={chatbubbleOutline} />
-                        Comment
+                        {post.comment_count}
                       </IonButton>
                       <IonButton fill="clear" className="action-button">
                         <IonIcon icon={shareOutline} />
@@ -676,11 +854,80 @@ const Feed: React.FC = () => {
           <IonContent>
             <IonList>
               {selectedPostLikes.map((like) => (
-                <IonItem key={like.user_id}>
-                  <IonLabel>{like.username}</IonLabel>
+                <IonItem key={like.user_id} lines="full">
+                  <IonAvatar slot="start" className="liked-by-avatar">
+                    {like.user_avatar_url ? (
+                      <img src={like.user_avatar_url} alt={`${like.username}'s avatar`} />
+                    ) : (
+                      <IonIcon icon={personOutline} />
+                    )}
+                  </IonAvatar>
+                  <IonLabel>
+                    <h2>{like.username}</h2>
+                  </IonLabel>
                 </IonItem>
               ))}
             </IonList>
+          </IonContent>
+        </IonModal>
+
+        {/* Comments Modal */}
+        <IonModal
+          isOpen={showCommentsModal}
+          onDidDismiss={() => {
+            setShowCommentsModal(false);
+            setSelectedPostId(null);
+            setSelectedPostComments([]);
+            setNewComment('');
+            setReplyingTo(null);
+          }}
+          className="comments-modal"
+        >
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Comments</IonTitle>
+              <IonButtons slot="end">
+                <IonButton onClick={() => setShowCommentsModal(false)}>
+                  <IonIcon icon={closeOutline} />
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent className="comments-content">
+            <div className="comments-container">
+              {selectedPostComments.map(comment => renderComment(comment))}
+            </div>
+            <div className="comment-input-container">
+              {replyingTo && (
+                <div className="replying-to">
+                  Replying to <strong>{replyingTo.username}</strong>
+                  <IonButton
+                    fill="clear"
+                    size="small"
+                    onClick={() => setReplyingTo(null)}
+                  >
+                    <IonIcon icon={closeOutline} />
+                  </IonButton>
+                </div>
+              )}
+              <div className="comment-input">
+                <IonTextarea
+                  value={newComment}
+                  onIonChange={e => setNewComment(e.detail.value!)}
+                  placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Add a comment..."}
+                  rows={1}
+                  autoGrow={true}
+                  className="comment-textarea"
+                />
+                <IonButton
+                  fill="clear"
+                  onClick={handleAddComment}
+                  disabled={!newComment.trim()}
+                >
+                  <IonIcon icon={sendOutline} />
+                </IonButton>
+              </div>
+            </div>
           </IonContent>
         </IonModal>
       </IonContent>
