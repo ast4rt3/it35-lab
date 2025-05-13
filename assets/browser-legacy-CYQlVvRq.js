@@ -1,0 +1,2 @@
+System.register(["./index-legacy-B2BIu-On.js"],(function(e,t){"use strict";var r;return{setters:[e=>{r=e.v}],execute:function(){var t,o,n=o?t:(o=1,t=function(){throw new Error("ws does not work in the browser. Browser clients must use the native WebSocket object")});const s=r(n),c=Object.freeze(Object.defineProperty({__proto__:null,default:s},Symbol.toStringTag,{value:"Module"}));e("b",c)}}}));
+//# sourceMappingURL=browser-legacy-CYQlVvRq.js.map
