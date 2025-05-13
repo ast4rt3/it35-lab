@@ -158,12 +158,26 @@ ion-badge {
   color: var(--ion-color-dark);
 }
 
-.post-image {
+.post-image-container {
+  margin-top: 10px;
   width: 100%;
-  height: auto;
-  border-radius: 12px;
-  margin-top: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  min-height: 0;
+  background: none;
+}
+
+.post-image-container::before,
+.post-image-container::after {
+  display: none;
+}
+
+.post-image {
+  max-width: 100%;
+  max-height: 500px;
+  border-radius: 8px;
+  object-fit: contain;
+  display: block;
 }
 
 .post-actions {

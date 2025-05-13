@@ -54,10 +54,20 @@ interface Post {
   post_content: string;
   post_created_at: string;
   post_updated_at: string;
+  image_url?: string;
   users?: {
     username: string;
     user_avatar_url: string | null;
   };
+}
+
+interface PostData {
+  post_content: string;
+  user_id: string;
+  username: string;
+  post_created_at: string;
+  post_updated_at: string;
+  image_url?: string;
 }
 
 const Feed: React.FC = () => {
@@ -181,23 +191,54 @@ const Feed: React.FC = () => {
 
     try {
       setError(null);
+      let imageUrl = null;
+
+      // Upload image if exists
+      if (newPostImage) {
+        const fileExt = newPostImage.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+
+        const { error: uploadError, data } = await supabase.storage
+          .from('post-images')
+          .upload(filePath, newPostImage);
+
+        if (uploadError) {
+          console.error('Image upload error:', uploadError);
+          throw uploadError;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('post-images')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+      }
+
       const now = new Date().toISOString();
+      const postData: PostData = {
+        post_content: newPostContent,
+        user_id: user.id,
+        username: username,
+        post_created_at: now,
+        post_updated_at: now
+      };
+
+      // Only add image_url if we have one
+      if (imageUrl) {
+        postData.image_url = imageUrl;
+      }
+
+      console.log('Attempting to insert post with data:', postData);
+
       const { data: newPost, error: insertError } = await supabase
         .from('posts')
-        .insert([
-          {
-            post_content: newPostContent,
-            user_id: user.id,
-            username: username,
-            post_created_at: now,
-            post_updated_at: now
-          }
-        ])
+        .insert([postData])
         .select()
         .single();
 
       if (insertError) {
-        console.error('Insert error:', insertError);
+        console.error('Insert error details:', insertError);
         throw insertError;
       }
 
@@ -339,6 +380,11 @@ const Feed: React.FC = () => {
                   </div>
                   <div className="post-content">
                     <p>{post.post_content}</p>
+                    {post.image_url && post.image_url !== 'null' && post.image_url !== '' && (
+                      <div className="post-image-container">
+                        <img src={post.image_url} className="post-image" />
+                      </div>
+                    )}
                   </div>
                   <div className="post-actions">
                     <div className="action-buttons-group">
