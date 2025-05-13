@@ -121,6 +121,8 @@ const Feed: React.FC = () => {
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [editingComment, setEditingComment] = useState<Comment | null>(null);
+  const [editCommentContent, setEditCommentContent] = useState('');
   const { user } = useAuth();
   const history = useHistory();
 
@@ -557,6 +559,96 @@ const Feed: React.FC = () => {
     }, 100);
   };
 
+  const handleEditComment = async () => {
+    if (!user || !editingComment || !editCommentContent.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .update({
+          content: editCommentContent.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingComment.id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Update the comment in the local state
+      setSelectedPostComments(prevComments => {
+        const updateCommentInTree = (comments: Comment[]): Comment[] => {
+          return comments.map(comment => {
+            if (comment.id === editingComment.id) {
+              return {
+                ...comment,
+                content: editCommentContent.trim(),
+                updated_at: new Date().toISOString()
+              };
+            }
+            if (comment.replies) {
+              return {
+                ...comment,
+                replies: updateCommentInTree(comment.replies)
+              };
+            }
+            return comment;
+          });
+        };
+        return updateCommentInTree(prevComments);
+      });
+
+      setEditingComment(null);
+      setEditCommentContent('');
+    } catch (err) {
+      console.error('Error editing comment:', err);
+      setError('Failed to edit comment. Please try again.');
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Update the comments in the local state
+      setSelectedPostComments(prevComments => {
+        const removeCommentFromTree = (comments: Comment[]): Comment[] => {
+          return comments.filter(comment => {
+            if (comment.id === commentId) {
+              return false;
+            }
+            if (comment.replies) {
+              comment.replies = removeCommentFromTree(comment.replies);
+            }
+            return true;
+          });
+        };
+        return removeCommentFromTree(prevComments);
+      });
+
+      // Update post comment count
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.post_id === selectedPostId) {
+          return {
+            ...post,
+            comment_count: (post.comment_count || 0) - 1
+          };
+        }
+        return post;
+      }));
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+      setError('Failed to delete comment. Please try again.');
+    }
+  };
+
   const renderComment = (comment: Comment, depth: number = 0) => (
     <div key={comment.id} className="comment" style={{ marginLeft: `${depth * 20}px` }}>
       <div className="comment-header">
@@ -571,10 +663,62 @@ const Feed: React.FC = () => {
           <span className="comment-username">{comment.username}</span>
           <span className="comment-time">{formatDate(comment.created_at)}</span>
         </div>
+        {user && comment.user_id === user.id && (
+          <div className="comment-actions">
+            <IonButton
+              fill="clear"
+              size="small"
+              onClick={() => {
+                setEditingComment(comment);
+                setEditCommentContent(comment.content);
+              }}
+            >
+              <IonIcon icon={createOutline} />
+            </IonButton>
+            <IonButton
+              fill="clear"
+              size="small"
+              onClick={() => handleDeleteComment(comment.id)}
+            >
+              <IonIcon icon={trashOutline} />
+            </IonButton>
+          </div>
+        )}
       </div>
-      <div className="comment-content">
-        <p>{comment.content}</p>
-      </div>
+      {editingComment?.id === comment.id ? (
+        <div className="edit-comment-container">
+          <IonTextarea
+            value={editCommentContent}
+            onIonChange={e => setEditCommentContent(e.detail.value!)}
+            rows={2}
+            autoGrow={true}
+            className="edit-comment-textarea"
+          />
+          <div className="edit-comment-actions">
+            <IonButton
+              fill="clear"
+              size="small"
+              onClick={() => {
+                setEditingComment(null);
+                setEditCommentContent('');
+              }}
+            >
+              Cancel
+            </IonButton>
+            <IonButton
+              size="small"
+              onClick={handleEditComment}
+              disabled={!editCommentContent.trim()}
+            >
+              Save
+            </IonButton>
+          </div>
+        </div>
+      ) : (
+        <div className="comment-content">
+          <p>{comment.content}</p>
+        </div>
+      )}
       <div className="comment-actions">
         <IonButton
           fill="clear"

@@ -880,4 +880,47 @@ ion-modal.comments-modal::part(content) {
 .post-modal .submit-button {
   --background: var(--ion-color-primary);
   --color: var(--ion-color-light);
+}
+
+.edit-comment-container {
+  margin: 8px 0;
+  padding: 8px;
+  background: var(--ion-item-background);
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-light);
+}
+
+.edit-comment-textarea {
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-light);
+}
+
+.edit-comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.comment-header .comment-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+
+.comment-header .comment-actions ion-button {
+  --padding-start: 4px;
+  --padding-end: 4px;
+  height: 24px;
+  margin: 0;
+}
+
+.comment-header .comment-actions ion-icon {
+  font-size: 1rem;
 } 
