@@ -114,6 +114,7 @@ const Feed: React.FC = () => {
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [showLikedByModal, setShowLikedByModal] = useState(false);
   const [selectedPostLikes, setSelectedPostLikes] = useState<LikedUser[]>([]);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
@@ -162,7 +163,7 @@ const Feed: React.FC = () => {
     try {
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('username')
+        .select('username, user_avatar_url')
         .eq('email', user.email)
         .single();
 
@@ -173,6 +174,7 @@ const Feed: React.FC = () => {
 
       if (userData) {
         setUsername(userData.username);
+        setUserAvatar(userData.user_avatar_url);
       }
     } catch (err) {
       console.error('Error in fetchUser:', err);
@@ -790,6 +792,20 @@ const Feed: React.FC = () => {
             <IonMenuButton />
           </IonButtons>
           <IonTitle>Feed</IonTitle>
+          {user && (
+            <IonButtons slot="end">
+              <div className="user-profile-header">
+                <span className="username">{username}</span>
+                <IonAvatar className="user-avatar">
+                  {userAvatar ? (
+                    <img src={userAvatar} alt={`${username}'s avatar`} />
+                  ) : (
+                    <IonIcon icon={personOutline} />
+                  )}
+                </IonAvatar>
+              </div>
+            </IonButtons>
+          )}
         </IonToolbar>
       </IonHeader>
       <IonContent>

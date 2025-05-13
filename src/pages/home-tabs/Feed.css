@@ -1065,4 +1065,23 @@ ion-modal.comments-modal::part(content) {
   background-color: var(--ion-item-background);
   margin: 0;
   border: 1px solid var(--ion-color-light);
+}
+
+.user-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 16px;
+}
+
+.user-profile-header .username {
+  color: var(--ion-color-light);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.user-profile-header .user-avatar {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--ion-color-light);
 } 
