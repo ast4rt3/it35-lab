@@ -40,7 +40,8 @@ import {
   heartOutline,
   heart,
   chatbubbleOutline,
-  shareOutline
+  shareOutline,
+  peopleOutline
 } from 'ionicons/icons';
 import { supabase } from '../../utils/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
@@ -59,6 +60,15 @@ interface Post {
     username: string;
     user_avatar_url: string | null;
   };
+  like_count: number;
+  liked_by_user: boolean;
+  liked_by?: Array<{
+    user_id: string;
+    username: string;
+  }>;
+  likes?: Array<{
+    user_id: string;
+  }>;
 }
 
 interface PostData {
@@ -82,6 +92,8 @@ const Feed: React.FC = () => {
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [showLikedByModal, setShowLikedByModal] = useState(false);
+  const [selectedPostLikes, setSelectedPostLikes] = useState<Array<{ user_id: string; username: string }>>([]);
   const { user } = useAuth();
   const history = useHistory();
 
@@ -148,6 +160,9 @@ const Feed: React.FC = () => {
           users:user_id (
             username,
             user_avatar_url
+          ),
+          likes:likes (
+            user_id
           )
         `)
         .order('post_created_at', { ascending: false });
@@ -162,7 +177,25 @@ const Feed: React.FC = () => {
         return;
       }
 
-      setPosts(postsData as Post[]);
+      // Process posts to include like information
+      const processedPosts = await Promise.all(postsData.map(async (post) => {
+        const { data: likeCount } = await supabase
+          .rpc('get_post_like_count', { post_id: post.post_id });
+
+        const { data: likedBy } = await supabase
+          .rpc('get_post_liked_users', { post_id: post.post_id });
+
+        const isLikedByUser = post.likes?.some((like: { user_id: string }) => like.user_id === user?.id);
+
+        return {
+          ...post,
+          like_count: likeCount || 0,
+          liked_by_user: isLikedByUser || false,
+          liked_by: likedBy || []
+        };
+      }));
+
+      setPosts(processedPosts as Post[]);
     } catch (err) {
       console.error('Error fetching posts:', err);
       setError('Failed to load posts. Please try again later.');
@@ -296,16 +329,74 @@ const Feed: React.FC = () => {
     });
   };
 
-  const toggleLike = (postId: string) => {
-    setLikedPosts(prev => {
-      const newLikedPosts = new Set(prev);
-      if (newLikedPosts.has(postId)) {
-        newLikedPosts.delete(postId);
+  const toggleLike = async (postId: string) => {
+    if (!user) return;
+
+    try {
+      const post = posts.find(p => p.post_id === postId);
+      if (!post) return;
+
+      if (post.liked_by_user) {
+        // Unlike
+        const { error } = await supabase
+          .from('likes')
+          .delete()
+          .match({ post_id: postId, user_id: user.id });
+
+        if (error) throw error;
+
+        setPosts(prevPosts => prevPosts.map(p => {
+          if (p.post_id === postId) {
+            return {
+              ...p,
+              like_count: (p.like_count || 0) - 1,
+              liked_by_user: false,
+              liked_by: p.liked_by?.filter(l => l.user_id !== user.id) || []
+            };
+          }
+          return p;
+        }));
       } else {
-        newLikedPosts.add(postId);
+        // Like
+        const { error } = await supabase
+          .from('likes')
+          .insert([{ post_id: postId, user_id: user.id }]);
+
+        if (error) throw error;
+
+        // Fetch updated like information
+        const { data: likedBy } = await supabase
+          .rpc('get_post_liked_users', { post_id: postId });
+
+        setPosts(prevPosts => prevPosts.map(p => {
+          if (p.post_id === postId) {
+            return {
+              ...p,
+              like_count: (p.like_count || 0) + 1,
+              liked_by_user: true,
+              liked_by: likedBy || []
+            };
+          }
+          return p;
+        }));
       }
-      return newLikedPosts;
-    });
+    } catch (err) {
+      console.error('Error toggling like:', err);
+      setError('Failed to update like. Please try again.');
+    }
+  };
+
+  const showLikedBy = async (postId: string) => {
+    try {
+      const { data: likedBy } = await supabase
+        .rpc('get_post_liked_users', { post_id: postId });
+
+      setSelectedPostLikes(likedBy || []);
+      setShowLikedByModal(true);
+    } catch (err) {
+      console.error('Error fetching liked by:', err);
+      setError('Failed to load liked by information.');
+    }
   };
 
   const handleModalDismiss = () => {
@@ -402,15 +493,25 @@ const Feed: React.FC = () => {
                     <div className="action-buttons-group">
                       <IonButton
                         fill="clear"
-                        className={`action-button ${likedPosts.has(post.post_id) ? 'liked' : ''}`}
+                        className={`action-button ${post.liked_by_user ? 'liked' : ''}`}
                         onClick={() => toggleLike(post.post_id)}
                       >
                         <IonIcon
-                          icon={likedPosts.has(post.post_id) ? heart : heartOutline}
-                          color={likedPosts.has(post.post_id) ? 'danger' : 'medium'}
+                          icon={post.liked_by_user ? heart : heartOutline}
+                          color={post.liked_by_user ? 'danger' : 'medium'}
                         />
-                        Like
+                        {post.like_count ?? 0}
                       </IonButton>
+                      {(post.like_count ?? 0) > 0 && (
+                        <IonButton
+                          fill="clear"
+                          className="action-button"
+                          onClick={() => showLikedBy(post.post_id)}
+                        >
+                          <IonIcon icon={peopleOutline} />
+                          Liked by
+                        </IonButton>
+                      )}
                       <IonButton fill="clear" className="action-button">
                         <IonIcon icon={chatbubbleOutline} />
                         Comment
@@ -554,6 +655,32 @@ const Feed: React.FC = () => {
                 </IonButton>
               </div>
             </div>
+          </IonContent>
+        </IonModal>
+
+        {/* Liked By Modal */}
+        <IonModal
+          isOpen={showLikedByModal}
+          onDidDismiss={() => setShowLikedByModal(false)}
+        >
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Liked By</IonTitle>
+              <IonButtons slot="end">
+                <IonButton onClick={() => setShowLikedByModal(false)}>
+                  <IonIcon icon={closeOutline} />
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            <IonList>
+              {selectedPostLikes.map((like) => (
+                <IonItem key={like.user_id}>
+                  <IonLabel>{like.username}</IonLabel>
+                </IonItem>
+              ))}
+            </IonList>
           </IonContent>
         </IonModal>
       </IonContent>

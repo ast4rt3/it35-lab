@@ -187,17 +187,46 @@ const Register: React.FC = () => {
     return (
         <IonPage>
             <IonContent className="ion-padding" fullscreen style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
+                <div style={{ 
+                    display: 'flex', 
+                    width: '100%', 
+                    height: '100%', 
+                    overflow: 'hidden',
+                    flexDirection: window.innerWidth <= 768 ? 'column' : 'row'
+                }}>
                     {/* Left Side (Form) */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '20px', overflowY: 'auto' }}>
+                    <div style={{ 
+                        flex: 1, 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        justifyContent: 'center', 
+                        alignItems: 'center', 
+                        height: '100%', 
+                        padding: window.innerWidth <= 768 ? '20px' : '20px', 
+                        overflowY: 'auto' 
+                    }}>
                         {/* Header */}
-                        <div style={{ width: '90%', maxWidth: '450px', marginBottom: '25px', textAlign: 'left' }}>
-                            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '5px', color: '#1a1b26' }}>Create Your Account</h2>
-                            <p style={{ fontSize: '16px', color: '#757575', margin: 0 }}>Please fill in your details to register</p>
+                        <div style={{ 
+                            width: window.innerWidth <= 768 ? '100%' : '90%', 
+                            maxWidth: '450px', 
+                            marginBottom: '25px', 
+                            textAlign: window.innerWidth <= 768 ? 'center' : 'left' 
+                        }}>
+                            <h2 style={{ 
+                                fontSize: window.innerWidth <= 768 ? '20px' : '24px', 
+                                fontWeight: 'bold', 
+                                marginBottom: '5px', 
+                                color: '#1a1b26' 
+                            }}>Create Your Account</h2>
+                            <p style={{ 
+                                fontSize: window.innerWidth <= 768 ? '14px' : '16px', 
+                                color: '#757575', 
+                                margin: 0 
+                            }}>Please fill in your details to register</p>
                         </div>
 
                         {/* Username Field */}
-                        <div style={{ width: '90%', maxWidth: '450px', marginBottom: '25px' }}>
+                        <div style={{ width: window.innerWidth <= 768 ? '100%' : '90%', maxWidth: '450px', marginBottom: '25px' }}>
                             <div style={{ position: 'relative', borderBottom: `2px solid ${isUsernameFocused ? 'var(--ion-color-primary)' : '#e0e0e0'}`, transition: 'border-color 0.3s ease', paddingBottom: '5px' }}>
                                 <IonLabel style={{ position: 'absolute', top: isUsernameFocused || username ? '0' : '50%', transform: `translateY(${isUsernameFocused || username ? '-50%' : '-50%'})`, transformOrigin: 'left top', left: '0', color: isUsernameFocused ? 'var(--ion-color-primary)' : '#757575', fontSize: isUsernameFocused || username ? '12px' : '16px', transition: 'all 0.3s ease', pointerEvents: 'none', paddingTop: isUsernameFocused || username ? '0' : '10px' }}>
                                     Username
@@ -206,10 +235,19 @@ const Register: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* First and Last Name Fields (in a grid for alignment) */}
-                        <IonGrid style={{ width: '90%', maxWidth: '450px', padding: 0, marginBottom: '10px' }}>
-                           <IonRow>
-                               <IonCol size="12" sizeMd="6" style={{ paddingLeft: 0, paddingRight: '8px', marginBottom: '15px' }}>
+                        {/* First and Last Name Fields */}
+                        <IonGrid style={{ 
+                            width: window.innerWidth <= 768 ? '100%' : '90%', 
+                            maxWidth: '450px', 
+                            padding: 0, 
+                            marginBottom: '10px' 
+                        }}>
+                            <IonRow>
+                                <IonCol size="12" sizeMd="6" style={{ 
+                                    paddingLeft: 0, 
+                                    paddingRight: window.innerWidth <= 768 ? '0' : '8px', 
+                                    marginBottom: '15px' 
+                                }}>
                                     {/* First Name Field */}
                                      <div style={{ position: 'relative', borderBottom: `2px solid ${isFirstNameFocused ? 'var(--ion-color-primary)' : '#e0e0e0'}`, transition: 'border-color 0.3s ease', paddingBottom: '5px' }}>
                                         <IonLabel style={{ position: 'absolute', top: isFirstNameFocused || firstName ? '0' : '50%', transform: `translateY(${isFirstNameFocused || firstName ? '-50%' : '-50%'})`, transformOrigin: 'left top', left: '0', color: isFirstNameFocused ? 'var(--ion-color-primary)' : '#757575', fontSize: isFirstNameFocused || firstName ? '12px' : '16px', transition: 'all 0.3s ease', pointerEvents: 'none', paddingTop: isFirstNameFocused || firstName ? '0' : '10px' }}>
@@ -218,7 +256,11 @@ const Register: React.FC = () => {
                                         <IonInput type="text" value={firstName} onIonChange={e => setFirstName(e.detail.value!)} onIonFocus={() => setIsFirstNameFocused(true)} onIonBlur={() => setIsFirstNameFocused(false)} style={{ '--padding-top': '15px', '--padding-bottom': '5px', '--padding-start': '0px', width: '100%', fontSize: '16px' }} />
                                     </div>
                                </IonCol>
-                               <IonCol size="12" sizeMd="6" style={{ paddingLeft: '8px', paddingRight: 0, marginBottom: '15px' }}>
+                               <IonCol size="12" sizeMd="6" style={{ 
+                                    paddingLeft: window.innerWidth <= 768 ? '0' : '8px', 
+                                    paddingRight: 0, 
+                                    marginBottom: '15px' 
+                                }}>
                                     {/* Last Name Field */}
                                      <div style={{ position: 'relative', borderBottom: `2px solid ${isLastNameFocused ? 'var(--ion-color-primary)' : '#e0e0e0'}`, transition: 'border-color 0.3s ease', paddingBottom: '5px' }}>
                                         <IonLabel style={{ position: 'absolute', top: isLastNameFocused || lastName ? '0' : '50%', transform: `translateY(${isLastNameFocused || lastName ? '-50%' : '-50%'})`, transformOrigin: 'left top', left: '0', color: isLastNameFocused ? 'var(--ion-color-primary)' : '#757575', fontSize: isLastNameFocused || lastName ? '12px' : '16px', transition: 'all 0.3s ease', pointerEvents: 'none', paddingTop: isLastNameFocused || lastName ? '0' : '10px' }}>
@@ -230,9 +272,8 @@ const Register: React.FC = () => {
                            </IonRow>
                         </IonGrid>
 
-
                         {/* Email Field */}
-                        <div style={{ width: '90%', maxWidth: '450px', marginBottom: '25px' }}>
+                        <div style={{ width: window.innerWidth <= 768 ? '100%' : '90%', maxWidth: '450px', marginBottom: '25px' }}>
                              <div style={{ position: 'relative', borderBottom: `2px solid ${isEmailFocused ? 'var(--ion-color-primary)' : '#e0e0e0'}`, transition: 'border-color 0.3s ease', paddingBottom: '5px' }}>
                                 <IonLabel style={{ position: 'absolute', top: isEmailFocused || email ? '0' : '50%', transform: `translateY(${isEmailFocused || email ? '-50%' : '-50%'})`, transformOrigin: 'left top', left: '0', color: isEmailFocused ? 'var(--ion-color-primary)' : '#757575', fontSize: isEmailFocused || email ? '12px' : '16px', transition: 'all 0.3s ease', pointerEvents: 'none', paddingTop: isEmailFocused || email ? '0' : '10px' }}>
                                     Email (@nbsc.edu.ph)
@@ -242,7 +283,7 @@ const Register: React.FC = () => {
                         </div>
 
                         {/* Password Field */}
-                        <div style={{ width: '90%', maxWidth: '450px', marginBottom: '25px' }}>
+                        <div style={{ width: window.innerWidth <= 768 ? '100%' : '90%', maxWidth: '450px', marginBottom: '25px' }}>
                             <div style={{ position: 'relative', borderBottom: `2px solid ${isPasswordFocused ? 'var(--ion-color-primary)' : '#e0e0e0'}`, transition: 'border-color 0.3s ease', paddingBottom: '5px', display: 'flex', alignItems: 'center' }}>
                                 <IonLabel style={{ position: 'absolute', top: isPasswordFocused || password ? '0' : '50%', transform: `translateY(${isPasswordFocused || password ? '-50%' : '-50%'})`, transformOrigin: 'left top', left: '0', color: isPasswordFocused ? 'var(--ion-color-primary)' : '#757575', fontSize: isPasswordFocused || password ? '12px' : '16px', transition: 'all 0.3s ease', pointerEvents: 'none', paddingTop: isPasswordFocused || password ? '0' : '10px' }}>
                                     Password (min 6 chars)
@@ -253,7 +294,7 @@ const Register: React.FC = () => {
                         </div>
 
                         {/* Confirm Password Field */}
-                        <div style={{ width: '90%', maxWidth: '450px', marginBottom: '30px' }}>
+                        <div style={{ width: window.innerWidth <= 768 ? '100%' : '90%', maxWidth: '450px', marginBottom: '30px' }}>
                              <div style={{ position: 'relative', borderBottom: `2px solid ${isConfirmPasswordFocused ? 'var(--ion-color-primary)' : '#e0e0e0'}`, transition: 'border-color 0.3s ease', paddingBottom: '5px', display: 'flex', alignItems: 'center' }}>
                                 <IonLabel style={{ position: 'absolute', top: isConfirmPasswordFocused || confirmPassword ? '0' : '50%', transform: `translateY(${isConfirmPasswordFocused || confirmPassword ? '-50%' : '-50%'})`, transformOrigin: 'left top', left: '0', color: isConfirmPasswordFocused ? 'var(--ion-color-primary)' : '#757575', fontSize: isConfirmPasswordFocused || confirmPassword ? '12px' : '16px', transition: 'all 0.3s ease', pointerEvents: 'none', paddingTop: isConfirmPasswordFocused || confirmPassword ? '0' : '10px' }}>
                                     Confirm Password
@@ -264,20 +305,59 @@ const Register: React.FC = () => {
                         </div>
 
                         {/* Buttons */}
-                        <IonButton onClick={handleOpenVerificationModal} expand="block" style={{ width: '90%', maxWidth: '450px', '--border-radius': '25px', '--padding-top': '15px', '--padding-bottom': '15px', '--box-shadow': '0 4px 6px rgba(0, 0, 0, 0.1)', marginBottom: '10px' }}>
+                        <IonButton 
+                            onClick={handleOpenVerificationModal} 
+                            expand="block" 
+                            style={{ 
+                                width: window.innerWidth <= 768 ? '100%' : '90%', 
+                                maxWidth: '450px', 
+                                '--border-radius': '25px', 
+                                '--padding-top': '15px', 
+                                '--padding-bottom': '15px', 
+                                '--box-shadow': '0 4px 6px rgba(0, 0, 0, 0.1)', 
+                                marginBottom: '10px' 
+                            }}
+                        >
                             Register
                         </IonButton>
-                        <IonButton routerLink="/it35-lab" expand="block" fill="clear" style={{ width: '90%', maxWidth: '450px', color: 'var(--ion-color-primary)' }}>
+                        <IonButton 
+                            routerLink="/it35-lab" 
+                            expand="block" 
+                            fill="clear" 
+                            style={{ 
+                                width: window.innerWidth <= 768 ? '100%' : '90%', 
+                                maxWidth: '450px', 
+                                color: 'var(--ion-color-primary)' 
+                            }}
+                        >
                             Already have an account? Sign in
                         </IonButton>
                     </div>
 
                     {/* Border Line */}
-                    <div style={{ width: '1px', backgroundColor: '#e0e0e0', height: '80%', alignSelf: 'center', display: 'none' }}></div>
+                    <div style={{ 
+                        width: window.innerWidth <= 768 ? '100%' : '1px', 
+                        height: window.innerWidth <= 768 ? '1px' : '80%', 
+                        backgroundColor: '#e0e0e0', 
+                        alignSelf: 'center', 
+                        margin: window.innerWidth <= 768 ? '20px 0' : '0',
+                        display: window.innerWidth <= 768 ? 'none' : 'block'
+                    }}></div>
 
-                    {/* Right Side (Logo) - Hidden on smaller screens */}
-                    <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a1b26', height: '100%'}}>
-                        <IonAvatar style={{ width: '200px', height: '200px' }}>
+                    {/* Right Side (Logo) */}
+                    <div style={{ 
+                        flex: 1, 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center', 
+                        backgroundColor: '#1a1b26', 
+                        height: window.innerWidth <= 768 ? 'auto' : '100%',
+                        padding: window.innerWidth <= 768 ? '40px 0' : '0'
+                    }}>
+                        <IonAvatar style={{ 
+                            width: window.innerWidth <= 768 ? '150px' : '200px', 
+                            height: window.innerWidth <= 768 ? '150px' : '200px' 
+                        }}>
                             <img src="/assets/icon/NBSC_logo.png" alt="NBSC Logo" />
                         </IonAvatar>
                     </div>
