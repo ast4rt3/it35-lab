@@ -54,7 +54,7 @@ interface Post {
   post_content: string;
   post_created_at: string;
   post_updated_at: string;
-  image_url?: string;
+  image_urls?: string[];
   users?: {
     username: string;
     user_avatar_url: string | null;
@@ -67,7 +67,7 @@ interface PostData {
   username: string;
   post_created_at: string;
   post_updated_at: string;
-  image_url?: string;
+  image_urls?: string[];
 }
 
 const Feed: React.FC = () => {
@@ -76,8 +76,8 @@ const Feed: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showNewPostModal, setShowNewPostModal] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
-  const [newPostImage, setNewPostImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [newPostImages, setNewPostImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -172,15 +172,24 @@ const Feed: React.FC = () => {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setNewPostImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setNewPostImages(prev => [...prev, ...files]);
+      
+      // Create previews for new images
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreviews(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
     }
+  };
+
+  const removeImage = (index: number) => {
+    setNewPostImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleCreatePost = async () => {
@@ -191,17 +200,17 @@ const Feed: React.FC = () => {
 
     try {
       setError(null);
-      let imageUrl = null;
+      const imageUrls: string[] = [];
 
-      // Upload image if exists
-      if (newPostImage) {
-        const fileExt = newPostImage.name.split('.').pop();
+      // Upload all images if they exist
+      for (const image of newPostImages) {
+        const fileExt = image.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
 
-        const { error: uploadError, data } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('post-images')
-          .upload(filePath, newPostImage);
+          .upload(filePath, image);
 
         if (uploadError) {
           console.error('Image upload error:', uploadError);
@@ -212,7 +221,7 @@ const Feed: React.FC = () => {
           .from('post-images')
           .getPublicUrl(filePath);
 
-        imageUrl = publicUrl;
+        imageUrls.push(publicUrl);
       }
 
       const now = new Date().toISOString();
@@ -224,9 +233,8 @@ const Feed: React.FC = () => {
         post_updated_at: now
       };
 
-      // Only add image_url if we have one
-      if (imageUrl) {
-        postData.image_url = imageUrl;
+      if (imageUrls.length > 0) {
+        postData.image_urls = imageUrls;
       }
 
       console.log('Attempting to insert post with data:', postData);
@@ -247,8 +255,8 @@ const Feed: React.FC = () => {
       }
 
       setNewPostContent('');
-      setNewPostImage(null);
-      setImagePreview(null);
+      setNewPostImages([]);
+      setImagePreviews([]);
       setShowNewPostModal(false);
     } catch (err) {
       console.error('Error creating post:', err);
@@ -303,8 +311,8 @@ const Feed: React.FC = () => {
   const handleModalDismiss = () => {
     setShowNewPostModal(false);
     setNewPostContent('');
-    setNewPostImage(null);
-    setImagePreview(null);
+    setNewPostImages([]);
+    setImagePreviews([]);
   };
 
   const handleModalPresent = () => {
@@ -380,9 +388,13 @@ const Feed: React.FC = () => {
                   </div>
                   <div className="post-content">
                     <p>{post.post_content}</p>
-                    {post.image_url && post.image_url !== 'null' && post.image_url !== '' && (
-                      <div className="post-image-container">
-                        <img src={post.image_url} className="post-image" />
+                    {post.image_urls && post.image_urls.length > 0 && (
+                      <div className="post-images-grid">
+                        {post.image_urls.map((url, index) => (
+                          <div key={index} className="post-image-container">
+                            <img src={url} className="post-image" />
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -421,8 +433,8 @@ const Feed: React.FC = () => {
             onClick={() => {
               setShowNewPostModal(true);
               setNewPostContent('');
-              setNewPostImage(null);
-              setImagePreview(null);
+              setNewPostImages([]);
+              setImagePreviews([]);
             }}
           >
             <IonIcon icon={add} />
@@ -460,8 +472,8 @@ const Feed: React.FC = () => {
           onDidDismiss={() => {
             setShowNewPostModal(false);
             setNewPostContent('');
-            setNewPostImage(null);
-            setImagePreview(null);
+            setNewPostImages([]);
+            setImagePreviews([]);
           }}
           className="post-modal"
         >
@@ -472,8 +484,8 @@ const Feed: React.FC = () => {
                 <IonButton onClick={() => {
                   setShowNewPostModal(false);
                   setNewPostContent('');
-                  setNewPostImage(null);
-                  setImagePreview(null);
+                  setNewPostImages([]);
+                  setImagePreviews([]);
                 }}>
                   <IonIcon icon={closeOutline} />
                 </IonButton>
@@ -497,24 +509,26 @@ const Feed: React.FC = () => {
                   onChange={handleImageChange}
                   style={{ display: 'none' }}
                   id="post-image-upload"
+                  multiple
                 />
                 <label htmlFor="post-image-upload" className="image-upload-label">
                   <IonIcon icon={imageOutline} />
-                  Add Image
+                  Add Images
                 </label>
-                {imagePreview && (
-                  <div className="image-preview">
-                    <img src={imagePreview} alt="Preview" />
-                    <IonButton
-                      fill="clear"
-                      className="remove-image-button"
-                      onClick={() => {
-                        setImagePreview(null);
-                        setNewPostImage(null);
-                      }}
-                    >
-                      <IonIcon icon={close} />
-                    </IonButton>
+                {imagePreviews.length > 0 && (
+                  <div className="image-previews-grid">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="image-preview">
+                        <img src={preview} alt={`Preview ${index + 1}`} />
+                        <IonButton
+                          fill="clear"
+                          className="remove-image-button"
+                          onClick={() => removeImage(index)}
+                        >
+                          <IonIcon icon={close} />
+                        </IonButton>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -525,8 +539,8 @@ const Feed: React.FC = () => {
                   onClick={() => {
                     setShowNewPostModal(false);
                     setNewPostContent('');
-                    setNewPostImage(null);
-                    setImagePreview(null);
+                    setNewPostImages([]);
+                    setImagePreviews([]);
                   }}
                 >
                   Cancel
@@ -534,7 +548,7 @@ const Feed: React.FC = () => {
                 <IonButton
                   className="submit-button"
                   onClick={handleCreatePost}
-                  disabled={!newPostContent.trim() && !newPostImage}
+                  disabled={!newPostContent.trim() && newPostImages.length === 0}
                 >
                   Post
                 </IonButton>
