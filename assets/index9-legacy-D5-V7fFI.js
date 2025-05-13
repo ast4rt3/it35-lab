@@ -3,3 +3,4 @@ System.register(["./index-legacy-CttJ9PXs.js"],(function(e,t){"use strict";var o
              * (C) Ionic http://ionicframework.com - MIT License
              */
 const t=e=>{if(void 0===e.composedPath)return e.target.closest(".ion-activatable");{const t=e.composedPath();for(let e=0;e<t.length-2;e++){const o=t[e];if(!(o instanceof ShadowRoot)&&o.classList.contains("ion-activatable"))return o}}},i=e=>e.classList.contains("ion-activatable-instant"),s=e=>{if(e.shadowRoot){const t=e.shadowRoot.querySelector("ion-ripple-effect");if(t)return t}return e.querySelector("ion-ripple-effect")},r="ion-activated",a=100,c=150}}}));
+//# sourceMappingURL=index9-legacy-D5-V7fFI.js.map

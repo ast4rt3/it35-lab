@@ -7,3 +7,4 @@ import{q as A}from"./index-CxZhPriS.js";/*!
  */const O=e=>e&&e.dir!==""?e.dir.toLowerCase()==="rtl":(document==null?void 0:document.dir.toLowerCase())==="rtl";/*!
  * (C) Ionic http://ionicframework.com - MIT License
  */const U=(e,t,r,i,c)=>{const n=e.ownerDocument.defaultView;let a=O(e);const b=o=>{const{startX:s}=o;return a?s>=n.innerWidth-50:s<=50},u=o=>a?-o.deltaX:o.deltaX,d=o=>a?-o.velocityX:o.velocityX;return N({el:e,gestureName:"goback-swipe",gesturePriority:101,threshold:10,canStart:o=>(a=O(e),b(o)&&t()),onStart:r,onMove:o=>{const s=u(o)/n.innerWidth;i(s)},onEnd:o=>{const p=u(o),s=n.innerWidth,v=p/s,m=d(o),Y=s/2,X=m>=0&&(m>.2||p>Y),w=(X?1-v:v)*s;let f=0;if(w>5){const T=w/Math.abs(m);f=Math.min(T,540)}c(X,v<=0?.01:A(0,v,.9999),f)}})};export{U as createSwipeBackGesture};
+//# sourceMappingURL=swipe-back-B-CkWfSR.js.map
