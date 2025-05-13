@@ -1,5 +1,5 @@
 import { 
-  IonButtons,
+    IonButtons,
     IonContent, 
     IonHeader, 
     IonMenuButton, 
@@ -7,8 +7,8 @@ import {
     IonTitle, 
     IonToolbar 
 } from '@ionic/react';
-
-const About: React.FC = () => {
+  
+const Notification: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
@@ -16,13 +16,23 @@ const About: React.FC = () => {
           <IonButtons slot='start'>
             <IonMenuButton></IonMenuButton>
           </IonButtons>
-          <IonTitle>About</IonTitle>
+          <IonTitle>Notifications</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+          }}
+        >
+          Notifications
+        </div>
       </IonContent>
     </IonPage>
   );
 };
-
-export default About;
+  
+export default Notification; 

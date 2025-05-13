@@ -28,10 +28,10 @@ import {
   import { Redirect, Route } from 'react-router';
   import Home from './Home';
   import Logs from './Logs';
-  import AlertAndNotification from './AlertAndNotification';
   import EventMonitoring from './EventMonitoring';
   import { useAuth } from '../contexts/AuthContext';
   import EditProfilePage from './EditProfilePage';
+  import Notification from './Notification';
   
   const Menu: React.FC = () => {
     const { user, session, loading, signOut } = useAuth();
@@ -45,7 +45,7 @@ import {
     const path = [
       {name:'Home', url: '/it35-lab/app/home', icon: homeOutline},
       {name:'Logs', url: '/it35-lab/app/Logs', icon: bookOutline},
-      {name:'Alerts & Notfications', url: '/it35-lab/app/AlertAndNotification', icon: notificationsOutline},
+      {name:'Notifications', url: '/it35-lab/app/notifications', icon: notificationsOutline},
       {name:'Events Monitoring', url: '/it35-lab/app/EventMonitoring', icon: calendarOutline},
       {name:'Profile', url: '/it35-lab/app/profile', icon: settingsOutline}
     ];
@@ -114,7 +114,7 @@ import {
             <IonRouterOutlet id="main">
               <Route exact path="/it35-lab/app/home" component={Home} />
               <Route exact path="/it35-lab/app/Logs" component={Logs} />
-              <Route exact path="/it35-lab/app/AlertAndNotification" component={AlertAndNotification} />
+              <Route exact path="/it35-lab/app/notifications" component={Notification} />
               <Route exact path="/it35-lab/app/EventMonitoring" component={EventMonitoring} />
               <Route exact path="/it35-lab/app/profile" component={EditProfilePage} />
             </IonRouterOutlet>
