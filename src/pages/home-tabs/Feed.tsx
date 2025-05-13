@@ -123,6 +123,8 @@ const Feed: React.FC = () => {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
   const [editCommentContent, setEditCommentContent] = useState('');
+  const [showFullViewModal, setShowFullViewModal] = useState(false);
+  const [selectedFullViewPost, setSelectedFullViewPost] = useState<Post | null>(null);
   const { user } = useAuth();
   const history = useHistory();
 
@@ -773,6 +775,13 @@ const Feed: React.FC = () => {
     }
   };
 
+  const handleShowFullView = async (post: Post) => {
+    setSelectedFullViewPost(post);
+    setShowFullViewModal(true);
+    setSelectedPostId(post.post_id);
+    await fetchComments(post.post_id);
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -839,7 +848,7 @@ const Feed: React.FC = () => {
                     {post.image_urls && post.image_urls.length > 0 && (
                       <div className="post-images-grid">
                         {post.image_urls.map((url, index) => (
-                          <div key={index} className="post-image-container">
+                          <div key={index} className="post-image-container" onClick={() => handleShowFullView(post)}>
                             <img src={url} className="post-image" />
                           </div>
                         ))}
@@ -1181,6 +1190,132 @@ const Feed: React.FC = () => {
                 </IonButton>
               </div>
             </div>
+          </IonContent>
+        </IonModal>
+
+        {/* Full View Modal */}
+        <IonModal
+          isOpen={showFullViewModal}
+          onDidDismiss={() => {
+            setShowFullViewModal(false);
+            setSelectedFullViewPost(null);
+            setSelectedPostComments([]);
+            setSelectedPostId(null);
+          }}
+          className="full-view-modal"
+        >
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Post</IonTitle>
+              <IonButtons slot="end">
+                <IonButton onClick={() => setShowFullViewModal(false)}>
+                  <IonIcon icon={closeOutline} />
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent className="full-view-content">
+            {selectedFullViewPost && (
+              <div className="full-view-container">
+                <div className="full-view-post">
+                  <div className="post-header">
+                    <div className="user-info">
+                      <IonAvatar className="user-avatar">
+                        {selectedFullViewPost.users?.user_avatar_url ? (
+                          <img src={selectedFullViewPost.users.user_avatar_url} alt="User avatar" />
+                        ) : (
+                          <IonIcon icon={personOutline} />
+                        )}
+                      </IonAvatar>
+                      <div className="user-details">
+                        <p className="username">{selectedFullViewPost.users?.username || 'Unknown User'}</p>
+                        <p className="post-time">{formatDate(selectedFullViewPost.post_created_at)}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="post-content">
+                    <p>{selectedFullViewPost.post_content}</p>
+                  </div>
+                  {selectedFullViewPost.image_urls && selectedFullViewPost.image_urls.length > 0 && (
+                    <div className="full-view-images">
+                      {selectedFullViewPost.image_urls.map((url, index) => (
+                        <div key={index} className="full-view-image-container">
+                          <img src={url} className="full-view-image" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="post-stats">
+                    <p className="likes-count">
+                      {selectedFullViewPost.like_count} {selectedFullViewPost.like_count === 1 ? 'person' : 'people'} liked this
+                    </p>
+                    <p className="comments-count">
+                      {selectedFullViewPost.comment_count} {selectedFullViewPost.comment_count === 1 ? 'comment' : 'comments'}
+                    </p>
+                  </div>
+                  <div className="action-buttons-group">
+                    <IonButton
+                      fill="clear"
+                      className={`action-button ${selectedFullViewPost.liked_by_user ? 'liked' : ''}`}
+                      onClick={() => toggleLike(selectedFullViewPost.post_id)}
+                    >
+                      {selectedFullViewPost.liked_by_user ? 'Unlike' : 'Like'}
+                    </IonButton>
+                    {(selectedFullViewPost.like_count ?? 0) > 0 && (
+                      <IonButton
+                        fill="clear"
+                        className="action-button"
+                        onClick={() => showLikedBy(selectedFullViewPost.post_id)}
+                      >
+                        View likes
+                      </IonButton>
+                    )}
+                  </div>
+                </div>
+                <div className="full-view-comments">
+                  <div className="comments-container">
+                    {selectedPostComments.length > 0 ? (
+                      selectedPostComments.map(comment => renderComment(comment))
+                    ) : (
+                      <div className="no-comments">
+                        <p>No comments yet. Be the first to comment!</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="comment-input-container">
+                  {replyingTo && (
+                    <div className="replying-to">
+                      Replying to <strong>{replyingTo.username}</strong>
+                      <IonButton
+                        fill="clear"
+                        size="small"
+                        onClick={() => setReplyingTo(null)}
+                      >
+                        <IonIcon icon={closeOutline} />
+                      </IonButton>
+                    </div>
+                  )}
+                  <div className="comment-input">
+                    <IonTextarea
+                      value={newComment}
+                      onIonChange={e => setNewComment(e.detail.value!)}
+                      placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Add a comment..."}
+                      rows={1}
+                      autoGrow={true}
+                      className="comment-textarea"
+                    />
+                    <IonButton
+                      fill="clear"
+                      onClick={handleAddComment}
+                      disabled={!newComment.trim()}
+                    >
+                      <IonIcon icon={sendOutline} />
+                    </IonButton>
+                  </div>
+                </div>
+              </div>
+            )}
           </IonContent>
         </IonModal>
       </IonContent>

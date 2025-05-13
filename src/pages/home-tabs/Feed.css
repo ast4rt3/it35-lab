@@ -215,15 +215,15 @@ ion-badge {
 }
 
 .post-textarea {
-  margin: 16px;
-  --background: var(--ion-item-background);
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --padding-top: 16px;
-  --padding-bottom: 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(122, 162, 247, 0.1);
-  color: var(--ion-text-color);
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
+  --padding-start: 0;
+  --padding-end: 0;
+  margin-bottom: 16px;
+}
+
+.post-textarea::part(native) {
+  padding: 0;
 }
 
 .image-preview-container {
@@ -531,24 +531,6 @@ ion-card-content ion-text {
   background: var(--ion-background-color);
 }
 
-.post-textarea {
-  --background: var(--ion-item-background);
-  --padding-start: 12px;
-  --padding-end: 12px;
-  --padding-top: 12px;
-  --padding-bottom: 12px;
-  --color: var(--ion-text-color);
-  border-radius: 12px;
-  width: 100%;
-  min-height: 150px;
-  background: var(--ion-item-background);
-  border: 1px solid var(--ion-color-light);
-}
-
-.post-textarea::part(native) {
-  padding: 12px;
-}
-
 .image-upload-container {
   display: flex;
   flex-direction: column;
@@ -719,9 +701,9 @@ ion-card-content ion-text {
 }
 
 .comment {
-  margin-bottom: 16px;
-  padding: 12px;
-  border-radius: 12px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 8px;
   background-color: var(--ion-item-background);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -729,13 +711,13 @@ ion-card-content ion-text {
 .comment-header {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .comment-avatar {
-  width: 32px;
-  height: 32px;
-  margin-right: 8px;
+  width: 28px;
+  height: 28px;
+  margin-right: 6px;
   border: 1px solid var(--ion-color-light);
 }
 
@@ -746,18 +728,18 @@ ion-card-content ion-text {
 
 .comment-username {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--ion-text-color);
 }
 
 .comment-time {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--ion-color-medium);
 }
 
 .comment-content {
-  margin: 8px 0;
-  font-size: 0.95rem;
+  margin: 6px 0;
+  font-size: 0.9rem;
   line-height: 1.4;
   color: var(--ion-text-color);
 }
@@ -779,7 +761,7 @@ ion-card-content ion-text {
   position: sticky;
   bottom: 0;
   background-color: var(--ion-background-color);
-  padding: 16px;
+  padding: 12px;
   border-top: 1px solid var(--ion-color-light);
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
@@ -805,10 +787,10 @@ ion-card-content ion-text {
 
 .comment-textarea {
   flex: 1;
-  --padding-start: 12px;
-  --padding-end: 12px;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
   border-radius: 20px;
   background-color: var(--ion-item-background);
   margin: 0;
@@ -893,13 +875,17 @@ ion-modal.comments-modal::part(content) {
 .edit-comment-textarea {
   --background: var(--ion-background-color);
   --color: var(--ion-text-color);
-  --padding-start: 8px;
-  --padding-end: 8px;
+  --padding-start: 0;
+  --padding-end: 0;
   --padding-top: 8px;
   --padding-bottom: 8px;
   margin-bottom: 8px;
   border-radius: 8px;
   border: 1px solid var(--ion-color-light);
+}
+
+.edit-comment-textarea::part(native) {
+  padding: 0;
 }
 
 .edit-comment-actions {
@@ -923,4 +909,160 @@ ion-modal.comments-modal::part(content) {
 
 .comment-header .comment-actions ion-icon {
   font-size: 1rem;
+}
+
+.full-view-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--ion-background-color);
+  position: relative;
+  padding-bottom: 80px;
+}
+
+.full-view-post {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.full-view-images {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.full-view-image-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.full-view-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.full-view-comments {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--ion-color-light);
+  background: var(--ion-background-color);
+  margin-top: 16px;
+  order: 2;
+}
+
+.full-view-comments .comments-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  max-height: 300px;
+}
+
+.post-stats {
+  margin: 16px 0;
+  padding: 8px 0;
+  border-top: 1px solid var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-light);
+  order: 1;
+}
+
+.post-stats p {
+  margin: 4px 0;
+  color: var(--ion-color-medium);
+  font-size: 0.9rem;
+}
+
+.likes-count {
+  font-weight: 600;
+  color: var(--ion-text-color) !important;
+}
+
+.action-buttons-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.action-button {
+  --color: var(--ion-color-primary);
+  font-weight: 500;
+}
+
+.action-button.liked {
+  --color: var(--ion-color-danger);
+}
+
+@media (max-width: 768px) {
+  .full-view-image {
+    max-height: 50vh;
+  }
+  
+  .full-view-comments .comments-container {
+    max-height: 250px;
+  }
+
+  .full-view-container {
+    padding-bottom: 70px;
+  }
+}
+
+.post-image-container {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.post-image-container:hover {
+  opacity: 0.9;
+}
+
+.no-comments {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--ion-color-medium);
+}
+
+.no-comments p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.comment-input-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--ion-background-color);
+  padding: 12px;
+  border-top: 1px solid var(--ion-color-light);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+}
+
+.comment-input {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.comment-textarea {
+  flex: 1;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  border-radius: 20px;
+  background-color: var(--ion-item-background);
+  margin: 0;
+  border: 1px solid var(--ion-color-light);
 } 
