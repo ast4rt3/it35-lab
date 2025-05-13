@@ -47,8 +47,9 @@ import {
 } from 'ionicons/icons';
 import { supabase } from '../../utils/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import './Feed.css';
+import { useHistory } from 'react-router-dom';
 
 interface LikedUser {
   user_id: string;
@@ -114,6 +115,7 @@ const Feed: React.FC = () => {
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [showLikedByModal, setShowLikedByModal] = useState(false);
   const [selectedPostLikes, setSelectedPostLikes] = useState<LikedUser[]>([]);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
@@ -126,6 +128,7 @@ const Feed: React.FC = () => {
   const [showFullViewModal, setShowFullViewModal] = useState(false);
   const [selectedFullViewPost, setSelectedFullViewPost] = useState<Post | null>(null);
   const { user } = useAuth();
+  const router = useIonRouter();
   const history = useHistory();
 
   // Listen for auth state changes
@@ -134,7 +137,7 @@ const Feed: React.FC = () => {
       if (event === 'SIGNED_OUT') {
         setPosts([]);
         setUsername(null);
-        history.push('/it35-lab');
+        router.push('/it35-lab');
       } else if (event === 'SIGNED_IN' && session?.user) {
         fetchUser();
         fetchPosts();
@@ -144,7 +147,7 @@ const Feed: React.FC = () => {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [history]);
+  }, [router]);
 
   // Initial data fetch
   useEffect(() => {
@@ -162,7 +165,7 @@ const Feed: React.FC = () => {
     try {
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('username')
+        .select('username, user_avatar_url')
         .eq('email', user.email)
         .single();
 
@@ -173,6 +176,7 @@ const Feed: React.FC = () => {
 
       if (userData) {
         setUsername(userData.username);
+        setUserAvatar(userData.user_avatar_url);
       }
     } catch (err) {
       console.error('Error in fetchUser:', err);
@@ -782,6 +786,10 @@ const Feed: React.FC = () => {
     await fetchComments(post.post_id);
   };
 
+  const handleProfileClick = () => {
+    window.location.href = '/it35-lab/app/profile';
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -790,6 +798,20 @@ const Feed: React.FC = () => {
             <IonMenuButton />
           </IonButtons>
           <IonTitle>Feed</IonTitle>
+          {user && (
+            <IonButtons slot="end">
+              <div className="user-profile-header" onClick={handleProfileClick} style={{ cursor: 'pointer' }}>
+                <span className="username">{username}</span>
+                <IonAvatar className="user-avatar">
+                  {userAvatar ? (
+                    <img src={userAvatar} alt={`${username}'s avatar`} />
+                  ) : (
+                    <IonIcon icon={personOutline} />
+                  )}
+                </IonAvatar>
+              </div>
+            </IonButtons>
+          )}
         </IonToolbar>
       </IonHeader>
       <IonContent>
