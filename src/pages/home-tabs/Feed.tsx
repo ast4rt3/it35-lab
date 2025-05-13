@@ -104,6 +104,9 @@ const Feed: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showNewPostModal, setShowNewPostModal] = useState(false);
+  const [showEditPostModal, setShowEditPostModal] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [editPostContent, setEditPostContent] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostImages, setNewPostImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -590,6 +593,42 @@ const Feed: React.FC = () => {
     </div>
   );
 
+  const handleEditPost = async () => {
+    if (!user || !editingPost || !editPostContent.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({
+          post_content: editPostContent.trim(),
+          post_updated_at: new Date().toISOString()
+        })
+        .eq('post_id', editingPost.post_id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Update the post in the local state
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.post_id === editingPost.post_id) {
+          return {
+            ...post,
+            post_content: editPostContent.trim(),
+            post_updated_at: new Date().toISOString()
+          };
+        }
+        return post;
+      }));
+
+      setShowEditPostModal(false);
+      setEditingPost(null);
+      setEditPostContent('');
+    } catch (err) {
+      console.error('Error editing post:', err);
+      setError('Failed to edit post. Please try again.');
+    }
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -728,6 +767,18 @@ const Feed: React.FC = () => {
             setSelectedPost(null);
           }}
           buttons={[
+            {
+              text: 'Edit',
+              icon: createOutline,
+              cssClass: 'action-sheet-button edit',
+              handler: () => {
+                if (selectedPost) {
+                  setEditingPost(selectedPost);
+                  setEditPostContent(selectedPost.post_content);
+                  setShowEditPostModal(true);
+                }
+              }
+            },
             {
               text: 'Delete',
               icon: trashOutline,
@@ -925,6 +976,64 @@ const Feed: React.FC = () => {
                   disabled={!newComment.trim()}
                 >
                   <IonIcon icon={sendOutline} />
+                </IonButton>
+              </div>
+            </div>
+          </IonContent>
+        </IonModal>
+
+        {/* Edit Post Modal */}
+        <IonModal
+          isOpen={showEditPostModal}
+          onDidDismiss={() => {
+            setShowEditPostModal(false);
+            setEditingPost(null);
+            setEditPostContent('');
+          }}
+          className="post-modal"
+        >
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Edit Post</IonTitle>
+              <IonButtons slot="end">
+                <IonButton onClick={() => {
+                  setShowEditPostModal(false);
+                  setEditingPost(null);
+                  setEditPostContent('');
+                }}>
+                  <IonIcon icon={closeOutline} />
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            <div className="post-form">
+              <IonTextarea
+                value={editPostContent}
+                onIonChange={e => setEditPostContent(e.detail.value!)}
+                placeholder="What's on your mind?"
+                rows={4}
+                className="post-textarea"
+                autoGrow={true}
+              />
+              <div className="modal-actions">
+                <IonButton
+                  fill="clear"
+                  className="cancel-button"
+                  onClick={() => {
+                    setShowEditPostModal(false);
+                    setEditingPost(null);
+                    setEditPostContent('');
+                  }}
+                >
+                  Cancel
+                </IonButton>
+                <IonButton
+                  className="submit-button"
+                  onClick={handleEditPost}
+                  disabled={!editPostContent.trim()}
+                >
+                  Save Changes
                 </IonButton>
               </div>
             </div>
